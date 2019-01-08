@@ -1,0 +1,394 @@
+---
+title: "Modèle linéaire"
+subtitle: "Séance 1 - Régression linéaire simple"
+author: "Florent Chuffart & Magali Richard"
+date: "10 Janvier 2019"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE, width = 75)
+knitr::opts_chunk$set(echo = TRUE, fig.align='center', dev='png', dpi = 95, out.width = "100%")
+```
+
+---
+
+## Evaluation
+
+ - individuelle sur un jeu de données aprés 4 séances de cours 
+ - data challenge à la fin des séances
+
+## Pré-requis
+ 
+ - R https://cran.r-project.org 
+ - RStudio https://www.rstudio.com
+
+## Cours 
+
+- https://github.com/magrichard/cours_modlin_M1
+
+---
+
+# Organisation prévisionnelle
+
+Séance 1 - 3h (10/01) Régression linéaire simple
+
+Séance 2 - 3h (24/01) Régression linéaire multiple
+
+Séance 3 - 3h (31/01) Anova 1 facteur / partie A
+
+Séance 4 - 3h (14/02) Anova 1 facteur / partie B
+
+Séance 5 - 3h (21/02) Anova 2 facteurs
+
+Séance 6 - 3h (07/03) Anova multiple
+
+Séance 7 - 3h (11/03) Anova facteurs emboités
+
+Séance 8 - 3h (14/03) Ancova
+
+---
+
+# Plan séance 1
+## Régression linéaire simple
+
+I) Introduction
+II) Présentation du modèle
+III) Estimation (méthode des moindres carrés)
+IV) Décomposition de la variance 
+V) Test et IC
+VI) Résidus
+VII) Exemple détaillé sous R
+
+---
+
+## I.  Introduction
+
+**Objectif**: chercher une relation entre la variable observée $Y$ et la variable explicative $X$. Les objectifs peuvent être multiples:
+
+-> approche exploratoire
+
+-> recherche de corrélation significative
+
+-> modèles de prédiction
+
+*Domaines d'application*: Physique, Chimie, Astronomie, Biologie, médecine, Economie
+
+Historiquement, le modèle linéaire a été développé par Fisher, avec applications en génétique et en agronomie.
+---
+
+## II. Présentation du modèle
+
+Considérons $X$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variables explicatives $X$. 
+
+Dans le cas de la regression linéaire simple, $Y$ est une **fonction affine (ou fonction linéaire)** de X.
+
+Les $n$ observations vont permettre de vérifier si la droite candidate est adéquate.
+
+$X$ et $Y$ ne jouent pas un rôle identique.
+$X$ explique $Y$. $X$ est une variable *indépendante (ou explicative)* et Y est une variable *dépendante (ou expliquée)*.
+
+*Remarque 1* : on utilise un modèle linéaire Gaussien pour des observations pouvant être modélisées par une loi normales. Pour d'autres distributions (Poisson, Bernoulli..), on utilisera un modèle linéaire généralisé.
+
+*Remarque 2* : La régression se caractérise par des variables explicatives **continues** ou quantitatives. L'ANOVA se caractérise par des variables explicatives **discrètes** (ou catégorielle, ou qualitatives).
+
+---
+
+## II. Présentation du modèle
+### Exemple d'une relation déterministe
+
+$$Y  = \beta_0 + \beta_1X  $$
+
+où $\beta_0$ et $\beta_1$ sont des réels fixés.
+
+*Par exemple $X$ en Celsius, $Y$ en Farenheit : $Y=32 + 9/5 X$.*
+
+Ici nous avons en identifiant : $\beta_0 = 32$ et $\beta_1 = 9/5$. 
+
+---
+
+## II.  Présentation du modèle
+### Exemple d'une relation stochastique
+
+
+Si ce cas déterministe n’est pas vérifié, il faut chercher la droite qui ajuste le mieux l’échantillon : **modèle linéaire non déterministe**.
+
+$$Y   = \beta_0 + \beta_1X + \epsilon $$
+
+où $\beta_0$ et $\beta_1$ sont des réels fixes, mais inconnus, et $\epsilon$ une variable représentant le comportement individuel.
+
+Modèle : $$E(Y)  = f(X) = \beta_0 + \beta_1X $$
+
+*Par exemple $X$ en la taille, $Y$ le poid, à une même taille, plusieurs poids peuvent correspondrent. Les données ne sont plus alignées.*
+
+
+---
+
+## II.  Présentation du modèle
+### Exemple
+
+Base de donnée `data_nutri`
+
+```{r}
+d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
+d$sex = as.factor(d$sex)
+DT::datatable(d, width = "100%")
+# head(d)
+```
+
+---
+
+## II.  Présentation du modèle
+### Exemple
+
+Représentation des données poids et tailles.
+
+
+```{r}
+# README RStudio config, uncheck: # preferences > R Markdown > show output inline for... 
+plot(d$taille, d$poids, main="poids~taille")
+
+```
+
+**Question** : comment définir la droite de regression?
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Droite de regression
+
+En analyse de régression linéaire :
+
+- $x_i$ est fixé
+- $y_i$ est aléatoire
+- la composante aléatoire d’un $y_i$ est le $ε_i$ correspondant.
+
+
+Pour l’instant, la droite de régression est inconnue.
+Tout le problème est d’estimer $\beta_0$ et $\beta_1$ à partir d’un échantillon de données.
+
+On essaie de déterminer la **droite de regression** qui approche le mieux les données: $$\widehat{y}(x) = \widehat{\beta}_0 + \widehat{\beta}_1x$$
+
+Avec $\widehat{y}(x)$ un estimateur de la moyenne de $Y$ mésurée sur tous les individus pour lesquels X vaut $x$ (moyenne théorique $\mu_Y(x)$).
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Estimation et résidus
+
+Lorsque $x = x_i$, alors $\widehat{y}(x_i) = \widehat{y}_i$ , c’est-à-dire :
+
+$$ \widehat{y}_i=\widehat{\beta}_0+ \widehat{\beta}_1x_i $$
+$\widehat{y}_i$ est appelée la valeur estimée par le modèle.
+
+Les quantités inobservables :
+$$\epsilon_i = y_i - \beta_0 - \beta_1x_i$$ 
+sont estimées par les quantités observables :
+$$ e_i= y-\widehat{y}_i$$ 
+
+- Les quantités $ei$ sont appelées les **résidus du modèle**.
+- La plupart des méthodes d’estimation : estimer la droite de régression par une droite qui minimise une fonction de résidus.
+- La plus connue : **la méthode des moindres carrés ordinaires (MCO)**.
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Méthode 
+
+**Objectif** : Définir des estimateurs qui minimisent la somme des carrés des résidus (ou **erreur quadratique moyenne** EQM):
+
+$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} e^2_i = \sum^{n}_{i=1} (y_i - \widehat{y}_i)^2 = \sum^{n}_{i=1} (y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
+Les estimateurs sont donc les coordonnées du minimum de la fonction à deux variables :
+
+$$ z = f(\beta_0,\beta_1) = \sum^{n}_{i=1} (y_i - \beta_0 -  \beta_1x_i)^2 $$.
+
+Cette fonction est appelée la **fonction objectif**.
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Méthode
+
+Les estimateurs correspondent aux valeurs annulant les dérivées partielles de cette fonction :
+
+$$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_0} = -2 \sum (y_i - \beta_0 - \beta_1x_i)$$
+$$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_1} = -2 \sum x_i (y_i - \beta_0 - \beta_1x_i)$$
+
+Les estimateurs $(\widehat\beta_0^{MCO},\widehat\beta_1^{MCO})$ sont les solutions du système d'équation:
+$$ \Bigg\{
+\begin{align}
+-2 \sum (y_i - \beta_0 - \beta_1x_i) = 0  \\ 
+-2 \sum x_i (y_i - \beta_0 - \beta_1x_i) = 0
+\end{align}
+$$
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Démonstration 
+
+Soient les equations suivantes: 
+
+$$(1) \sum{y}_i = n\widehat\beta_0 + \widehat\beta_1 \sum{x_i} $$
+
+$$(2) \sum{x_iy_i} = \widehat\beta_0 \sum{x_i} + \widehat\beta_1 \sum{x^2_i}$$
+On utilise les notations usuelles des moyennes empiriques $$\overline{x}_n = \frac{1}{n}\sum{x_i} ,\ \ \ \ \ \ \overline{y}_n = \frac{1}{n}\sum{y_i}$$
+
+D'après (1): $$\widehat\beta_0 = \overline{y}_n - \widehat\beta_1 \overline{x}_n$$
+
+D'après (2):
+
+\begin{eqnarray}
+\widehat\beta_1 \sum{x^2_i} & = & \sum{x_iy_i} - \widehat\beta_0 \overline{x}_n \\
+                            & = & \sum{x_iy_i} - n\overline{x}_n\overline{y}_n + \widehat\beta_1 (\overline{x}_n)^2
+\end{eqnarray}
+
+Ainsi $$\widehat\beta_1 = \frac{\sum{x_iy_i} -  n\overline{x}_n\overline{y}_n}{\sum{x_i^2} -  n(\overline{x}_n)^2}$$
+
+Et comme nous avons :
+
+\begin{eqnarray}
+\sum{(x_i-\overline{x}_n)(y_i-\overline{y}_n)} & = & \sum{x_iy_i} -  n\overline{x}_n\overline{y}_n \\
+                   \sum{(x_i-\overline{x}_n)}   & = & \sum{x_i^2} -  n(\overline{x}_n)^2
+\end{eqnarray}
+
+Nous obtenons: $$\widehat\beta_1 = \frac{\sum{(x_i-\overline{x}_n)(y_i-\overline{y}_n)}}{\sum{(x_i-\overline{x}_n)}}$$
+
+Dans la pratique, nous calculons $\widehat\beta_1$ puis $\widehat\beta_0$.
+
+Nous obtenons ainsi une estimation de la droite de régression, appelée la droite des moindres carrés ordinaires:
+
+$$\widehat{y}(x) = \widehat\beta_0 + \widehat\beta_1x$$
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Exemple
+
+$\widehat\beta_0$ correspond à l'ordonnée à l'origine. Ce paramètre n'est pas toujours interprétable (il dépend de la signifaction de $X$ et du fait que $X$ soit centré ou non).
+
+$\widehat\beta_1$ correspond à la pente.
+
+Attention, la technique des MCO crée des estimateurs sensibles aux valeurs atypiques.
+
+```{r}
+# README RStudio config, uncheck: # preferences > R Markdown > show output inline for... 
+#layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+plot(d$taille, d$poids, main="poids~taille")
+## Model
+# Y~X
+# E(Y) = b.X
+# E(Y) = b_0 + b_1.X
+# Y_i = b_0 + b_1.X_i + e_i
+m = lm(d$poids~d$taille)
+m$coefficients
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
+# residuals
+m$residuals
+arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+legend("topleft",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
+```
+
+---
+
+## IV.  Décomposition de la variance
+### Variation expliquée et inexpliquée
+
+La variation de $Y$ vient du fait de sa dépendance à la variable explicative $X$. C'est la **variation expliquée par le modèle**.
+
+Dans l’exemple « taille-poids », nous avons remarqué que lorsque nous mesurons $Y$ avec une même valeur de $X$, nous observons une certaine variation sur $Y$. C'est la **variation inexpliquée par le modèle**.
+
+Variation totale de Y = Variation expliquée par le modèle + Variation inexpliquée par le modèle
+
+Soit $$(y_i - \overline{y}_n) = (\widehat{y}_i - \overline{y}_n) + (y_i - \widehat{y}_i)$$ avec $(\widehat{y}_i - \overline{y}_n)$ la différence expliquée par le modèle et $(y_i - \widehat{y}_i)$ la différence inexpliquée (ou résidu).
+
+---
+
+## IV.  Décomposition de la variance
+### Interêt des moindres carrés
+
+La méthode des moindres carrés conserve la décomposition (en variance expliquée et résiduelle) en considérenat la somme des carrés de ces différences: 
+
+$$ \sum(y_i - \overline{y}_n)^2 = \sum(\widehat{y}_i - \overline{y}_n)^2 + \sum(y_i - \widehat{y}_i)^2 $$
+Soit $$ SC_{tot} = SC_{reg} + SC_{res}$$ 
+
+Avec $SC_{tot}$ la somme des carrés totale,  $SC_{reg}$ la somme des carrés due à la régression et  $SC_{res}$ la somme des carrés des résidus.
+
+
+---
+
+## IV.  Décomposition de la variance
+### Coefficient de determination $R^2$
+
+La mesure du pourcentage de la variation totale expliquée par le modèle se fait par le **coefficient de détermination**.
+
+$$ R^2 = \frac{SC_{reg}}{SC_{tot}}$$
+
+- $R^2$ est compris entre 0 et 1.
+- $R^2 = 1$ : cas où les données sont parfaitement alignées
+(comme c’est le cas pour un modèle déterministe).
+- $R^2 = 0$ :cas où la variation de $Y$ n’est pas due à la variation de $X$. Les données ne sont pas du tout alignées.
+- Plus $R^2$  est proche de 1, plus les données sont alignées sur la droite de régression.
+
+---
+
+## V. Test et IC
+### Hypothèses fondamentales
+
+Il est important de noter que la construction du modèle de régression et l’estimation des paramètres par MCO ne fait pas appel aux hypothèses de distribution
+
+Les hypothèses de distribution sont essentielles lorsqu’il s’agit de construire des tests et des intervalles de confiance et de prédiction
+
+Hypothèses fondamentales:
+- Les observations sont indépendantes
+- La variance des erreurs est constante $\sigma^2$
+- La loi des erreurs est une loi normale $\mathcal{N}(0, \sigma^2)$
+
+---
+
+## V. Test et IC
+### Notations
+
+La variance des résidus est estimée par :
+$$\widehat\sigma^2_n = \frac{1}{n-2}\sum^n_{i=1}  (y_i - \widehat\beta_0 - \widehat\beta_1x_i)^2 = \frac{n}{n-2}S^2_y(1-R^2)$$
+
+---
+
+## V. Test et IC
+### Test des paramètres
+
+On se pose la question de l'effet de la variable $X$ :$H_0 : {\beta_1 = 0}$
+
+Lorsque les résidus suivent une loi normale, on peut construire un test à l'aide de la statistique suivante:
+
+$$ F = ... $$ qui suit...
+
+On peut construire l'intervalle de confiance 
+
+$$IC...$$
+
+---
+
+## V. Test et IC
+### Interprétation du test
+
+---
+
+## VI.  Résidus
+### Effet levier, distance de Cook
+
+
+---
+
+## VII.  Exemple détaillé sous R
+
+
+
+---
+
+## Notes
+
+Ce cours s'inspire des références suivantes:
+
+- Frédéric Bertrand & Myriam Maumy-Bertrand
+- Franck Picard
