@@ -160,14 +160,14 @@ plot(d$taille, d$poids, main="poids~taille")
 En analyse de régression linéaire :
 
 - $x_i$ est fixé
-- $y_i$ est aléatoire
-- la composante aléatoire d’un $y_i$ est le $ε_i$ correspondant.
+- $Y_i$ est aléatoire
+- la composante aléatoire d’un $Y_i$ est le $ε_i$ correspondant.
 
 
 Pour l’instant, la droite de régression est inconnue.
 Tout le problème est d’estimer $\beta_0$ et $\beta_1$ à partir d’un échantillon de données.
 
-On essaie de déterminer la **droite de regression** qui approche le mieux les données: $$\widehat{y}(x) = \widehat{\beta}_0 + \widehat{\beta}_1x$$
+On essaie de déterminer la **droite de regression** qui approche le mieux les données: $$\widehat{Y}(x) = \widehat{\beta}_0 + \widehat{\beta}_1x$$
 
 Avec $\widehat{y}(x)$ un estimateur de la moyenne de $Y$ mésurée sur tous les individus pour lesquels X vaut $x$ (moyenne théorique $\mu_Y(x)$).
 
@@ -176,9 +176,9 @@ Avec $\widehat{y}(x)$ un estimateur de la moyenne de $Y$ mésurée sur tous les 
 ## III.  Estimation - Méthode des moindres carrés
 ### Estimation et résidus
 
-Lorsque $x = x_i$, alors $\widehat{y}(x_i) = \widehat{y}_i$ , c’est-à-dire :
+Lorsque $x = x_i$, alors $\widehat{Y}(x_i) = \widehat{Y}_i$ , c’est-à-dire :
 
-$$ \widehat{y}_i=\widehat{\beta}_0+ \widehat{\beta}_1x_i $$
+$$ \widehat{Y}_i=\widehat{\beta}_0+ \widehat{\beta}_1x_i $$
 $\widehat{y}_i$ est appelée la valeur estimée par le modèle.
 
 Les quantités inobservables :
@@ -197,7 +197,7 @@ $$ e_i= y-\widehat{y}_i$$
 
 **Objectif** : Définir des estimateurs qui minimisent la somme des carrés des résidus (ou **erreur quadratique moyenne** EQM):
 
-$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} e^2_i = \sum^{n}_{i=1} (y_i - \widehat{y}_i)^2 = \sum^{n}_{i=1} (y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
+$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} e^2_i = \sum^{n}_{i=1} (Y_i - \widehat{Y}_i)^2 = \sum^{n}_{i=1} (Y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
 Les estimateurs sont donc les coordonnées du minimum de la fonction à deux variables :
 
 $$ z = f(\beta_0,\beta_1) = \sum^{n}_{i=1} (y_i - \beta_0 -  \beta_1x_i)^2 $$.
@@ -211,8 +211,8 @@ Cette fonction est appelée la **fonction objectif**.
 
 Les estimateurs correspondent aux valeurs annulant les dérivées partielles de cette fonction :
 
-$$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_0} = -2 \sum (y_i - \beta_0 - \beta_1x_i)$$
-$$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_1} = -2 \sum x_i (y_i - \beta_0 - \beta_1x_i)$$
+$$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_0} = -2 \sum (Y_i - \beta_0 - \beta_1x_i)$$
+$$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_1} = -2 \sum x_i (Y_i - \beta_0 - \beta_1x_i)$$
 
 Les estimateurs $(\widehat\beta_0^{MCO},\widehat\beta_1^{MCO})$ sont les solutions du système d'équation:
 $$ \Bigg\{
@@ -375,8 +375,35 @@ $$IC...$$
 ---
 
 ## VI.  Résidus
+### Motivation et définition
+
+Hypothèses fondamentales
+- $\epsilon_i$ sont gaussien $\mathcal{N}(0,\sigma^2)$
+- $\epsilon_i$ sont indépendants
+- $\sigma^2$ est constante (homoscédasticité)
+
+Les valeurs exactes des résidus sont inconnues mais on les estimes par:
+
+$$ \widehat\epsilon_i = Y_i - (\widehat\beta_0 + \widehat\beta_1x_i)$$
+
+On introduit le coefficient $h_{ij}$ tel que:
+
+$$h_{ij} = \frac{1}{n} + \frac{(x_i -\overline{x})^2}{\sum^n_{i=1}(x_i -\overline{x})^2}$$
+
+---
+
+## VI.  Résidus
 ### Effet levier, distance de Cook
 
+Le terme $h_{ij}$ représente le poids de l'observation $i$ sur sa propre estimation. On peut montrer que: 
+$$ \widehat{Y_i} = h_{ij}Y_i + \sum_{j\neq i}h_{ij}Y_j$$
+$$ h_{ij} = \frac{1}{n} + \frac{(x_i - \overline{x})(x_j - \overline{x}) }{\sum^n_{h=1}(x_h-\overline{x})^2}$$
+
+Si $h_{ij}$ est grand ($\geq \frac{1}{2}$), alors le point $i$ est un point levier (point atypique).
+
+La distance de Cook est utilisée pour mesurer l'influence de l'observation  $i$ sur l'estimation:
+
+$$ D_i= \frac{\sum^n_{j=1}(\widehat{Y}_{(i)j}-\widehat{Y}_j)^2}{2\widehat\sigma^2} = \frac{h_{ij}}{2(1-h_{ij})}r^2_i$$
 
 ---
 
