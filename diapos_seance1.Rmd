@@ -8,7 +8,9 @@ output: slidy_presentation
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE, width = 75)
-knitr::opts_chunk$set(echo = TRUE, fig.align='center', dev='png', dpi = 95, out.width = "100%")
+knitr::opts_chunk$set(echo = TRUE, fig.align="center", dev="png", dpi = 95, out.width = "100%")
+d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
+d$sex = as.factor(d$sex)
 ```
 
 ---
@@ -66,51 +68,93 @@ VII) Exemple détaillé sous R
 
 **Objectif**: chercher une relation entre la variable observée $Y$ et la variable explicative $X$. Les objectifs peuvent être multiples:
 
--> approche exploratoire
+  * approche exploratoire
 
--> recherche de corrélation significative
+  * recherche de corrélation significative
 
--> modèles de prédiction
+  * modèles de prédiction
 
-*Domaines d'application*: Physique, Chimie, Astronomie, Biologie, médecine, Economie
+Domaines d’application : chimie, astronomie, sismologie, économie, démographie, épidémiologie, géographie, écologie, géologie, physique, médecine...
 
 Historiquement, le modèle linéaire a été développé par Fisher, avec applications en génétique et en agronomie.
 
----
+--- 
 
 ## II. Présentation du modèle
 
-Considérons $x$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variable explicatives $x$. 
+Considérons $x$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variable explicative $x$. 
 
-Dans le cas de la regression linéaire simple, $Y$ est une **fonction affine (ou fonction linéaire)** de x.
+**IMPORTANT** dans le cadre des modèles linéaire Y est quantitatives (Ex : taille, poids, age...).
+
+Dans le cas de la regression linéaire simple, $Y$ est une **fonction affine** (ou **fonction linéaire**) de x.
+
+$$Y  = \beta_0 + \beta_1x  $$
+
+
+```{r  echo=FALSE, fig.width=12, fig.heigh=6, results="hide"}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+
+plot(d$taille, d$poids, main="poids~taille", ylab="poids", xlab="taille")
+m = lm(poids~taille, d)
+m$coefficients
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
+plot(d$taille, d$poids, main="poids~taille", ylab="poids", xlab="taille", xlim=c(0,max(d$taille)), ylim=c(m$coefficients[[1]]-20, max(d$poids)))
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
+# points(0,m$coefficients[[1]], pch=16)
+abline(h=m$coefficients[[1]], v=0, lty=2)
+axis(2, at=m$coefficients[[1]], "beta_0", las=2)
+
+segments(50, predict(m, data.frame(taille=50)), 100, predict(m, data.frame(taille=50)), lty=2)
+segments(100, predict(m, data.frame(taille=50)), 100, predict(m, data.frame(taille=100)), lty=2)
+text(75, predict(m, data.frame(taille=50)), "50", pos=1)
+text(100, predict(m, data.frame(taille=75)), "50*beta_1", pos=4)
+
+```
+
+
 
 Les $n$ observations vont permettre de vérifier si la droite candidate est adéquate.
 
-$x$ et $Y$ ne jouent pas un rôle identique.
+$x$ et $Y$ ne jouent pas un rôle identique : 
 
-$x$ explique $Y$. $x$ est une variable *indépendante (ou explicative)* et $Y$ est une variable *dépendante (ou expliquée)*.
+  - $x$ explique $Y$
+  - $x$ est une variable *indépendante* (ou *explicative*) et $Y$ est une variable *dépendante* (ou *expliquée*)
 
-*Remarque 1* : on utilise un modèle linéaire Gaussien pour des observations pouvant être modélisées par une loi normales. Pour d'autres distributions (Poisson, Bernoulli..), on utilisera un modèle linéaire généralisé.
 
-*Remarque 2* : La régression se caractérise par des variables explicatives **continues** ou quantitatives. L'ANOVA se caractérise par des variables explicatives **discrètes** (ou catégorielle, ou qualitatives).
+Remarques : 
+
+  - On utilise un modèle linéaire Gaussien pour des observations pouvant être modélisées par une loi normales. Pour d’autres distributions (Poisson, Bernoulli...), on utilisera un modèle linéaire généralisé.
+  - La régression linéaire se caractérise par des variables explicatives **continues** ou quantitatives (Ex : poids~taille). L’ANOVA se caractérise par des variables explicatives **discrètes**, catégorielle, ou qualitatives (Ex : poids~sexe).
 
 ---
 
 ## II. Présentation du modèle
-### Exemple d'une relation déterministe
+### Exemple d’une relation déterministe
 
 $$Y  = \beta_0 + \beta_1x  $$
 
 où $\beta_0$ et $\beta_1$ sont des réels fixés.
 
-*Par exemple $X$ en Celsius, $Y$ en Farenheit : $Y=32 + 9/5 X$.*
+Par exemple la température $X$ en degrés Celsius, $Y$ en degrés Farenheit : $Y=32 + 9/5 X$.
 
 Ici nous avons en identifiant : $\beta_0 = 32$ et $\beta_1 = 9/5$. 
+
+
+```{r  echo=FALSE, fig.width=12, fig.heigh=6, results="hide"}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+beta_0 = 32
+beta_1 = 9/5
+d_f = -20:40
+plot(d_f, beta_0 + beta_1 * d_f, main="Température", ylab="deg. C", xlab="deg. F", col=0)
+abline(a=beta_0, b=beta_1, col=2) # /!\ y = b.x + a
+```
+
+
 
 ---
 
 ## II.  Présentation du modèle
-### Exemple d'une relation stochastique
+### Exemple d’une relation stochastique
 
 
 Si ce cas déterministe n’est pas vérifié, il faut chercher la droite qui ajuste le mieux l’échantillon : **modèle linéaire non déterministe**.
@@ -119,9 +163,9 @@ $$Y   = \beta_0 + \beta_1x + \epsilon $$
 
 où $\beta_0$ et $\beta_1$ sont des réels fixes, mais inconnus, et $\epsilon$ une variable représentant le comportement individuel.
 
-Modèle : $$E(Y)  = f(X) = \beta_0 + \beta_1x$$
+Modèle : $$E(Y)  = f(x) = \beta_0 + \beta_1 x$$
 
-*Par exemple $x$ en la taille, $Y$ le poid, à une même taille, plusieurs poids peuvent correspondrent. Les données ne sont plus alignées.*
+*Par exemple $x$ en la taille, $Y$ le poids, à une même taille, plusieurs poids peuvent correspondrent. Les données ne sont plus alignées.*
 
 
 ---
@@ -131,9 +175,7 @@ Modèle : $$E(Y)  = f(X) = \beta_0 + \beta_1x$$
 
 Base de donnée `data_nutri`
 
-```{r}
-d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
-d$sex = as.factor(d$sex)
+```{r echo=FALSE}
 DT::datatable(d, width = "100%")
 # head(d)
 ```
@@ -143,27 +185,26 @@ DT::datatable(d, width = "100%")
 ## II.  Présentation du modèle
 ### Exemple
 
-Représentation des données poids et tailles.
-
-
-```{r}
-# README RStudio config, uncheck: # preferences > R Markdown > show output inline for... 
-plot(d$taille, d$poids, main="poids~taille")
-
-```
+Représentation des données poids et tailles
 
 **Question** : comment définir la droite de regression?
+
+```{r echo=FALSE}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+plot(d$taille, d$poids, main="poids~taille", ylab="poids", xlab="taille")
+```
+
 
 ---
 
 ## III.  Estimation - Méthode des moindres carrés
 ### Droite de regression
 
-En analyse de régression linéaire :
+En analyse de régression linéaire, pour un individu $i$ :
 
 - $x_i$ est fixé
 - $Y_i$ est aléatoire
-- la composante aléatoire d’un $Y_i$ est le $ε_i$ correspondant.
+- la composante aléatoire de $Y_i$ est le $ε_i$ correspondant
 
 
 Pour l’instant, la droite de régression est inconnue.
@@ -173,7 +214,7 @@ On essaie de déterminer la **droite de regression** qui approche le mieux les d
 
 Avec $\widehat{Y}(x)$ un estimateur de la moyenne théorique $\mu_Y(x)$ ($\widehat{Y}(x)$ correspond à la moyenne de $Y$ mésurée sur tous les individus pour lesquels $x$ prend une valeur donnée). 
 
-$\mu_Y(x)$ n'est ni observable, ni calculable (il faudrait alors recenser **tous** les individus de la population).
+$\mu_Y(x)$ n’est ni observable, ni calculable (il faudrait alors recenser **tous** les individus de la population).
 
 *Remarque* : la moyenne empirique de $Y$, définie par $\overline{Y}_n(x) = \frac{1}{n}\sum^n_{i=1}Y_i(x)$ est un autre estimateur de $\mu_Y(x)$ . Si le modèle est bon, $\widehat{Y}(x)$ est plus précis que $\overline{Y}_n(x)$
 
@@ -219,7 +260,7 @@ Les estimateurs correspondent aux valeurs annulant les dérivées partielles de 
 $$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_0} = -2 \sum (Y_i - \beta_0 - \beta_1x_i)$$
 $$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_1} = -2 \sum x_i (Y_i - \beta_0 - \beta_1x_i)$$
 
-Les estimateurs $(\widehat\beta_0^{MCO},\widehat\beta_1^{MCO})$ sont les solutions du système d'équation:
+Les estimateurs $(\widehat\beta_0^{MCO},\widehat\beta_1^{MCO})$ sont les solutions du système d’équation:
 $$ \Bigg\{
 \begin{align}
 -2 \sum (Y_i - \beta_0 - \beta_1x_i) = 0  \\ 
@@ -239,9 +280,9 @@ $$(1) \sum{Y}_i = n\widehat\beta_0 + \widehat\beta_1 \sum{x_i} $$
 $$(2) \sum{x_iY_i} = \widehat\beta_0 \sum{x_i} + \widehat\beta_1 \sum{x^2_i}$$
 On utilise les notations usuelles des moyennes empiriques $$\overline{x}_n = \frac{1}{n}\sum{x_i} ,\ \ \ \ \ \ \overline{Y}_n = \frac{1}{n}\sum{Y_i}$$
 
-D'après (1): $$\widehat\beta_0 = \overline{Y}_n - \widehat\beta_1 \overline{x}_n$$
+D’après (1): $$\widehat\beta_0 = \overline{Y}_n - \widehat\beta_1 \overline{x}_n$$
 
-D'après (2):
+D’après (2):
 
 \begin{eqnarray}
 \widehat\beta_1 \sum{x^2_i} & = & \sum{x_iY_i} - \widehat\beta_0 \overline{x}_n \\
@@ -270,7 +311,7 @@ $$\widehat{Y}(x) = \widehat\beta_0 + \widehat\beta_1x$$
 ## III.  Estimation - Méthode des moindres carrés
 ### Exemple
 
-$\widehat\beta_0$ correspond à l'ordonnée à l'origine. Ce paramètre n'est pas toujours interprétable (il dépend de la signifaction de $X$ et du fait que $X$ soit centré ou non).
+$\widehat\beta_0$ correspond à l’ordonnée à l’origine. Ce paramètre n’est pas toujours interprétable (il dépend de la signifaction de $X$ et du fait que $X$ soit centré ou non).
 
 $\widehat\beta_1$ correspond à la pente.
 
@@ -299,9 +340,9 @@ legend("topleft",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
 ## IV.  Décomposition de la variance
 ### Variation expliquée et inexpliquée
 
-La variation de $Y$ vient du fait de sa dépendance à la variable explicative $X$. C'est la **variation expliquée par le modèle**.
+La variation de $Y$ vient du fait de sa dépendance à la variable explicative $X$. C’est la **variation expliquée par le modèle**.
 
-Dans l’exemple « taille-poids », nous avons remarqué que lorsque nous mesurons $Y$ avec une même valeur de $X$, nous observons une certaine variation sur $Y$. C'est la **variation inexpliquée par le modèle**.
+Dans l’exemple « taille-poids », nous avons remarqué que lorsque nous mesurons $Y$ avec une même valeur de $X$, nous observons une certaine variation sur $Y$. C’est la **variation inexpliquée par le modèle**.
 
 Variation totale de Y = Variation expliquée par le modèle + Variation inexpliquée par le modèle
 
@@ -354,13 +395,13 @@ Hypothèses fondamentales:
 ## V. Test et IC
 ### Test des paramètres
 
-On se pose la question de l'effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
+On se pose la question de l’effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
 
-**Conditions d'applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
+**Conditions d’applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
 
-*Test d'ajustement des résidus à une gaussienne*:
+*Test d’ajustement des résidus à une gaussienne*:
 
-- Test de Kolmogoroff-Smirnoff (fondé sur les fonctions de répartition). Ce test à une tendance à rejeter l'hypothèse de normalité.
+- Test de Kolmogoroff-Smirnoff (fondé sur les fonctions de répartition). Ce test à une tendance à rejeter l’hypothèse de normalité.
 
 - Test du QQ plot 
 
@@ -371,17 +412,17 @@ TO DO: exemple sous R
 ## V. Test et IC
 ### Test des paramètres
 
-On se pose la question de l'effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
+On se pose la question de l’effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
 
-**Conditions d'applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
+**Conditions d’applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
 
-**Statistique du test**: SI l'hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_1,n-2} = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ suit la loi de Student $t(n-2)$
+**Statistique du test**: SI l’hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_1,n-2} = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ suit la loi de Student $t(n-2)$
 
 **Décision et conclusion du test**: La valeur critique du test, notée $c_\alpha$ est lue dans une tabe de la loi de Student.
 
-Si la valeur absolue de la valeur de la statistiqu calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est supérieure ou égale a $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d'erreur de premi§dre esp§ece $\alpha$.
+Si la valeur absolue de la valeur de la statistiqu calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est supérieure ou égale a $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d’erreur de premi§dre esp§ece $\alpha$.
 
-Si la valeur absolue de la valeur de la statistiqu calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est strictement inférieure a $c_\alpha$, alors le test n'est pas significatif. Vous consrvez $\mathcal{H}_0$ avec un risque d'erreur de deuxieme expece $\beta$ a évaluer. 
+Si la valeur absolue de la valeur de la statistiqu calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est strictement inférieure a $c_\alpha$, alors le test n’est pas significatif. Vous consrvez $\mathcal{H}_0$ avec un risque d’erreur de deuxieme expece $\beta$ a évaluer. 
 
 
 ---
@@ -390,22 +431,22 @@ Si la valeur absolue de la valeur de la statistiqu calculée sur l'echantillon, 
 ### Notations
 
 -$\widehat\sigma^2_n$ : la variance résiduelle
--$s^2_Y$ : la variance de l'échantillon des $Y_i$
--$s^2_x$ : la variance de l'échantillon des $x_i$
--$s^2_{\beta_1}$ : La variance de l'estimateur $\widehat\beta_1$
--$s^2_{\beta_0}$ : La variance de l'estimateur $\widehat\beta_0$
+-$s^2_Y$ : la variance de l’échantillon des $Y_i$
+-$s^2_x$ : la variance de l’échantillon des $x_i$
+-$s^2_{\beta_1}$ : La variance de l’estimateur $\widehat\beta_1$
+-$s^2_{\beta_0}$ : La variance de l’estimateur $\widehat\beta_0$
 
-L'estimation de la variance $\sigma^2$ peut se faire 
+L’estimation de la variance $\sigma^2$ peut se faire 
 La variance des résidus est estimée par :
 $$\widehat\sigma^2_n = \frac{1}{n-2}\sum^n_{i=1}  (Y_i - \widehat\beta_0 - \widehat\beta_1x_i)^2 = \frac{n}{n-2}s^2_Y(1-R^2)$$
 
-Avec $s^2_Y = \frac{1}{n}(\sum^n_{i=1}Y_i^2)-(\overline{Y}_n)^2$ la variance de l'échantillon des $Y_i$ et $\overline{Y}_n$ la moyenne des $Y_i$.
+Avec $s^2_Y = \frac{1}{n}(\sum^n_{i=1}Y_i^2)-(\overline{Y}_n)^2$ la variance de l’échantillon des $Y_i$ et $\overline{Y}_n$ la moyenne des $Y_i$.
 
 $$ s^2_{\beta_1} = \frac{\widehat\sigma^2_n}{ns^2_x}$$
 
  $$ s^2_{\beta_0} = \widehat\sigma^2_n\Big(\frac{1}{n}+\frac{\overline{x}_n}{ns^2_x}\Big)$$
  
-TO DO" exeple  dans R pour récupérer l'estimation de la variance résiduelle avec smmary : carré de risudal standard error"
+TO DO" exeple  dans R pour récupérer l’estimation de la variance résiduelle avec smmary : carré de risudal standard error"
 
 ---
 
@@ -418,7 +459,7 @@ $$IC_{1-\alpha}(\widehat\beta_1) = \Big]\widehat\beta_1 - t_{n-2;1-\alpha/2}*s_{
 
 $$IC_{1-\alpha}(\widehat\beta_0 = \Big]\widehat\beta_0 - t_{n-2;1-\alpha/2}*s_{\beta_0}; \widehat\beta_0 + t_{n-2;1-\alpha/2}*s_{\beta_0}\Big[$$
 
-Ainsi que l'intervalle de prédiction d'une valeur moyenne de $Y$, sachant que $x = x_0$. L'estimation ponctuelle pour cette valeur de $x_0$ est alors égale a $\widehat{Y}_0 = \widehat\beta_0 + \widehat\beta_1x_0$
+Ainsi que l’intervalle de prédiction d’une valeur moyenne de $Y$, sachant que $x = x_0$. L’estimation ponctuelle pour cette valeur de $x_0$ est alors égale a $\widehat{Y}_0 = \widehat\beta_0 + \widehat\beta_1x_0$
 
 $$IP_{1-\alpha}(Y) = \Big]\widehat{Y}_0 - t_{n-2;1-\alpha/2}\sqrt{\widehat\sigma^2_n\Big(\frac{1}{n}+\frac{(x_0-\overline{x}_n)^2}{ns^2_x})}; \widehat{Y}_0 + t_{n-2;1-\alpha/2}*\sqrt{\widehat\sigma^2_n\Big(\frac{1}{n}+\frac{(x_0-\overline{x}_n)^2}{ns^2_x})}\Big[$$
 
@@ -445,13 +486,13 @@ $$h_{ij} = \frac{1}{n} + \frac{(x_i -\overline{x})^2}{\sum^n_{i=1}(x_i -\overlin
 ## VI.  Résidus
 ### Effet levier, distance de Cook
 
-Le terme $h_{ij}$ représente le poids de l'observation $i$ sur sa propre estimation. On peut montrer que: 
+Le terme $h_{ij}$ représente le poids de l’observation $i$ sur sa propre estimation. On peut montrer que: 
 $$ \widehat{Y_i} = h_{ij}Y_i + \sum_{j\neq i}h_{ij}Y_j$$
 $$ h_{ij} = \frac{1}{n} + \frac{(x_i - \overline{x})(x_j - \overline{x}) }{\sum^n_{h=1}(x_h-\overline{x})^2}$$
 
 Si $h_{ij}$ est grand ($\geq \frac{1}{2}$), alors le point $i$ est un point levier (point atypique).
 
-La distance de Cook est utilisée pour mesurer l'influence de l'observation  $i$ sur l'estimation:
+La distance de Cook est utilisée pour mesurer l’influence de l’observation  $i$ sur l’estimation:
 
 $$ D_i= \frac{\sum^n_{j=1}(\widehat{Y}_{(i)j}-\widehat{Y}_j)^2}{2\widehat\sigma^2} = \frac{h_{ij}}{2(1-h_{ij})}r^2_i$$
 
@@ -465,7 +506,7 @@ $$ D_i= \frac{\sum^n_{j=1}(\widehat{Y}_{(i)j}-\widehat{Y}_j)^2}{2\widehat\sigma^
 
 ## Notes
 
-Ce cours s'inspire des références suivantes:
+Ce cours s’inspire des références suivantes:
 
 - Frédéric Bertrand & Myriam Maumy-Bertrand
 - Franck Picard
