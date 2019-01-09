@@ -58,7 +58,7 @@ I) Introduction
 II) Présentation du modèle
 III) Estimation (méthode des moindres carrés)
 IV) Décomposition de la variance 
-V) Test et IC
+V) Test statistique et IC/IP
 VI) Résidus
 VII) Exemple détaillé sous R
 
@@ -355,7 +355,7 @@ Soit $$(Y_i - \overline{Y}_n) = (\widehat{Y}_i - \overline{Y}_n) + (Y_i - \wideh
 
 La méthode des moindres carrés conserve la décomposition (en variance expliquée et résiduelle) en considérenat la somme des carrés de ces différences: 
 
-$$ \sum(y_i - \overline{y}_n)^2 = \sum(\widehat{y}_i - \overline{y}_n)^2 + \sum(y_i - \widehat{y}_i)^2 $$
+$$ \sum(Y_i - \overline{Y}_n)^2 = \sum(\widehat{Y}_i - \overline{Y}_n)^2 + \sum(Y_i - \widehat{Y}_i)^2 $$
 Soit $$ SC_{tot} = SC_{reg} + SC_{res}$$ 
 
 Avec $SC_{tot}$ la somme des carrés totale,  $SC_{reg}$ la somme des carrés due à la régression et  $SC_{res}$ la somme des carrés des résidus.
@@ -378,26 +378,35 @@ $$ R^2 = \frac{SC_{reg}}{SC_{tot}}$$
 
 ---
 
-## V. Test et IC
+## V. Test statistique et IC/IP
 ### Hypothèses fondamentales
 
 Il est important de noter que la construction du modèle de régression et l’estimation des paramètres par MCO ne fait pas appel aux hypothèses de distribution
 
-Les hypothèses de distribution sont essentielles lorsqu’il s’agit de construire des tests et des intervalles de confiance et de prédiction
+Les hypothèses de distribution sont essentielles lorsqu’il s’agit de construire des tests et des intervalles de confiance et de prédiction.
 
 Hypothèses fondamentales:
+
 - Les observations sont indépendantes
 - La variance des erreurs est constante $\sigma^2$
 - La loi des erreurs est une loi normale $\mathcal{N}(0, \sigma^2)$
 
 ---
 
-## V. Test et IC
+## V. Test statistique et IC/IP
 ### Test des paramètres
 
+<<<<<<< HEAD
 On se pose la question de l’effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
 
 **Conditions d’applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
+=======
+On se pose la question de l'effet de la variable $X$ :
+
+$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
+
+**Conditions d'applications du test**: Les variables aléatoire $\epsilon_i$ sont indépendantes et suivent la loi normale centrée et de variance $\sigma^2$.
+>>>>>>> acedf60a4be606a7f294b2fa54023f7af1bd48cf
 
 *Test d’ajustement des résidus à une gaussienne*:
 
@@ -409,20 +418,34 @@ TO DO: exemple sous R
 
 ---
 
-## V. Test et IC
+## V. Test statistique et IC/IP
 ### Test des paramètres
 
+<<<<<<< HEAD
 On se pose la question de l’effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
 
 **Conditions d’applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
 
 **Statistique du test**: SI l’hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_1,n-2} = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ suit la loi de Student $t(n-2)$
+=======
+$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
 
-**Décision et conclusion du test**: La valeur critique du test, notée $c_\alpha$ est lue dans une tabe de la loi de Student.
+**Conditions d'applications du test**: Les variables aléatoire $\epsilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
 
+**Statistique du test**: Si l'hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_1,n-2} = \frac{\widehat\beta_1-0}{s_{\widehat\beta_1}}$ suit la loi de Student $\mathcal{T}(n-2)$
+>>>>>>> acedf60a4be606a7f294b2fa54023f7af1bd48cf
+
+**Décision et conclusion du test**: La valeur critique du test, notée $c_\alpha$ est lue dans une table de la loi de Student.
+
+<<<<<<< HEAD
 Si la valeur absolue de la valeur de la statistiqu calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est supérieure ou égale a $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d’erreur de premi§dre esp§ece $\alpha$.
 
 Si la valeur absolue de la valeur de la statistiqu calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est strictement inférieure a $c_\alpha$, alors le test n’est pas significatif. Vous consrvez $\mathcal{H}_0$ avec un risque d’erreur de deuxieme expece $\beta$ a évaluer. 
+=======
+- Si la valeur absolue de la valeur de la statistique calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs)$ est supérieure ou égale à $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d'erreur de première espèce $\alpha$.
+
+- Si la valeur absolue de la valeur de la statistique calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs)$ est strictement inférieure à $c_\alpha$, alors le test n'est pas significatif. Vous conservez $\mathcal{H}_0$ avec un risque d'erreur de deuxième espèce $\beta$ à évaluer. 
+>>>>>>> acedf60a4be606a7f294b2fa54023f7af1bd48cf
 
 
 ---
@@ -430,6 +453,7 @@ Si la valeur absolue de la valeur de la statistiqu calculée sur l’echantillon
 ## V. Test et IC
 ### Notations
 
+<<<<<<< HEAD
 -$\widehat\sigma^2_n$ : la variance résiduelle
 -$s^2_Y$ : la variance de l’échantillon des $Y_i$
 -$s^2_x$ : la variance de l’échantillon des $x_i$
@@ -445,6 +469,15 @@ Avec $s^2_Y = \frac{1}{n}(\sum^n_{i=1}Y_i^2)-(\overline{Y}_n)^2$ la variance de 
 $$ s^2_{\beta_1} = \frac{\widehat\sigma^2_n}{ns^2_x}$$
 
  $$ s^2_{\beta_0} = \widehat\sigma^2_n\Big(\frac{1}{n}+\frac{\overline{x}_n}{ns^2_x}\Big)$$
+=======
+- $\widehat\sigma^2_n$ : la variance résiduelle.= $$\widehat\sigma^2_n = \frac{1}{n-2}\sum^n_{i=1}  (Y_i - \widehat\beta_0 - \widehat\beta_1x_i)^2 = \frac{n}{n-2}s^2_Y(1-R^2)$$
+- $s^2_Y$ : la variance de l'échantillon des $Y_i$ $$s^2_Y = \frac{1}{n}(\sum^n_{i=1}Y_i^2)-(\overline{Y}_n)^2$$
+- $s^2_x$ : la variance de l'échantillon des $x_i$
+- $s^2_{\beta_1}$ : La variance de l'estimateur $\widehat\beta_1$ $$s^2_{\beta_1} = \frac{\widehat\sigma^2_n}{(n-1)s^2_x}$$
+- $s^2_{\beta_0}$ : La variance de l'estimateur $\widehat\beta_0$ $$ s^2_{\beta_0} = \widehat\sigma^2_n\Big(\frac{1}{n}+\frac{\overline{x}_n^2}{(n-1)s^2_x}\Big)$$
+
+
+>>>>>>> acedf60a4be606a7f294b2fa54023f7af1bd48cf
  
 TO DO" exeple  dans R pour récupérer l’estimation de la variance résiduelle avec smmary : carré de risudal standard error"
 
@@ -459,16 +492,23 @@ $$IC_{1-\alpha}(\widehat\beta_1) = \Big]\widehat\beta_1 - t_{n-2;1-\alpha/2}*s_{
 
 $$IC_{1-\alpha}(\widehat\beta_0 = \Big]\widehat\beta_0 - t_{n-2;1-\alpha/2}*s_{\beta_0}; \widehat\beta_0 + t_{n-2;1-\alpha/2}*s_{\beta_0}\Big[$$
 
+<<<<<<< HEAD
 Ainsi que l’intervalle de prédiction d’une valeur moyenne de $Y$, sachant que $x = x_0$. L’estimation ponctuelle pour cette valeur de $x_0$ est alors égale a $\widehat{Y}_0 = \widehat\beta_0 + \widehat\beta_1x_0$
+=======
+Ainsi que l'intervalle de prédiction d'une valeur moyenne de $Y$, sachant que $x = x_0$. 
 
-$$IP_{1-\alpha}(Y) = \Big]\widehat{Y}_0 - t_{n-2;1-\alpha/2}\sqrt{\widehat\sigma^2_n\Big(\frac{1}{n}+\frac{(x_0-\overline{x}_n)^2}{ns^2_x})}; \widehat{Y}_0 + t_{n-2;1-\alpha/2}*\sqrt{\widehat\sigma^2_n\Big(\frac{1}{n}+\frac{(x_0-\overline{x}_n)^2}{ns^2_x})}\Big[$$
+L'estimation ponctuelle pour cette valeur de $x_0$ est alors égale a $\widehat{Y}_0 = \widehat\beta_0 + \widehat\beta_1x_0$
+>>>>>>> acedf60a4be606a7f294b2fa54023f7af1bd48cf
+
+$$IP_{1-\alpha}(Y) = \Big]\widehat{Y}_0 - t_{n-2;1-\alpha/2}\sqrt{\widehat\sigma^2_n\Big(\frac{1}{n}+\frac{(x_0-\overline{x}_n)^2}{(n-1)s^2_x}\Big)}; \widehat{Y}_0 + t_{n-2;1-\alpha/2}*\sqrt{\widehat\sigma^2_n\Big(\frac{1}{n}+\frac{(x_0-\overline{x}_n)^2}{(n-1)s^2_x}\Big)}\Big[$$
 
 ---
 
 ## VI.  Résidus
 ### Motivation et définition
 
-Hypothèses fondamentales
+Hypothèses fondamentales:
+
 - $\epsilon_i$ sont gaussien $\mathcal{N}(0,\sigma^2)$
 - $\epsilon_i$ sont indépendants
 - $\sigma^2$ est constante (homoscédasticité)
