@@ -75,18 +75,20 @@ VII) Exemple détaillé sous R
 *Domaines d'application*: Physique, Chimie, Astronomie, Biologie, médecine, Economie
 
 Historiquement, le modèle linéaire a été développé par Fisher, avec applications en génétique et en agronomie.
+
 ---
 
 ## II. Présentation du modèle
 
-Considérons $X$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variables explicatives $X$. 
+Considérons $x$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variable explicatives $x$. 
 
-Dans le cas de la regression linéaire simple, $Y$ est une **fonction affine (ou fonction linéaire)** de X.
+Dans le cas de la regression linéaire simple, $Y$ est une **fonction affine (ou fonction linéaire)** de x.
 
 Les $n$ observations vont permettre de vérifier si la droite candidate est adéquate.
 
-$X$ et $Y$ ne jouent pas un rôle identique.
-$X$ explique $Y$. $X$ est une variable *indépendante (ou explicative)* et Y est une variable *dépendante (ou expliquée)*.
+$x$ et $Y$ ne jouent pas un rôle identique.
+
+$x$ explique $Y$. $x$ est une variable *indépendante (ou explicative)* et $Y$ est une variable *dépendante (ou expliquée)*.
 
 *Remarque 1* : on utilise un modèle linéaire Gaussien pour des observations pouvant être modélisées par une loi normales. Pour d'autres distributions (Poisson, Bernoulli..), on utilisera un modèle linéaire généralisé.
 
@@ -97,7 +99,7 @@ $X$ explique $Y$. $X$ est une variable *indépendante (ou explicative)* et Y est
 ## II. Présentation du modèle
 ### Exemple d'une relation déterministe
 
-$$Y  = \beta_0 + \beta_1X  $$
+$$Y  = \beta_0 + \beta_1x  $$
 
 où $\beta_0$ et $\beta_1$ sont des réels fixés.
 
@@ -113,13 +115,13 @@ Ici nous avons en identifiant : $\beta_0 = 32$ et $\beta_1 = 9/5$.
 
 Si ce cas déterministe n’est pas vérifié, il faut chercher la droite qui ajuste le mieux l’échantillon : **modèle linéaire non déterministe**.
 
-$$Y   = \beta_0 + \beta_1X + \epsilon $$
+$$Y   = \beta_0 + \beta_1x + \epsilon $$
 
 où $\beta_0$ et $\beta_1$ sont des réels fixes, mais inconnus, et $\epsilon$ une variable représentant le comportement individuel.
 
-Modèle : $$E(Y)  = f(X) = \beta_0 + \beta_1X $$
+Modèle : $$E(Y)  = f(X) = \beta_0 + \beta_1x$$
 
-*Par exemple $X$ en la taille, $Y$ le poid, à une même taille, plusieurs poids peuvent correspondrent. Les données ne sont plus alignées.*
+*Par exemple $x$ en la taille, $Y$ le poid, à une même taille, plusieurs poids peuvent correspondrent. Les données ne sont plus alignées.*
 
 
 ---
@@ -169,7 +171,11 @@ Tout le problème est d’estimer $\beta_0$ et $\beta_1$ à partir d’un échan
 
 On essaie de déterminer la **droite de regression** qui approche le mieux les données: $$\widehat{Y}(x) = \widehat{\beta}_0 + \widehat{\beta}_1x$$
 
-Avec $\widehat{y}(x)$ un estimateur de la moyenne de $Y$ mésurée sur tous les individus pour lesquels X vaut $x$ (moyenne théorique $\mu_Y(x)$).
+Avec $\widehat{Y}(x)$ un estimateur de la moyenne théorique $\mu_Y(x)$ ($\widehat{Y}(x)$ correspond à la moyenne de $Y$ mésurée sur tous les individus pour lesquels $x$ prend une valeur donnée). 
+
+$\mu_Y(x)$ n'est ni observable, ni calculable (il faudrait alors recenser **tous** les individus de la population).
+
+*Remarque* : la moyenne empirique de $Y$, définie par $\overline{Y}_n(x) = \frac{1}{n}\sum^n_{i=1}Y_i(x)$ est un autre estimateur de $\mu_Y(x)$ . Si le modèle est bon, $\widehat{Y}(x)$ est plus précis que $\overline{Y}_n(x)$
 
 ---
 
@@ -179,12 +185,12 @@ Avec $\widehat{y}(x)$ un estimateur de la moyenne de $Y$ mésurée sur tous les 
 Lorsque $x = x_i$, alors $\widehat{Y}(x_i) = \widehat{Y}_i$ , c’est-à-dire :
 
 $$ \widehat{Y}_i=\widehat{\beta}_0+ \widehat{\beta}_1x_i $$
-$\widehat{y}_i$ est appelée la valeur estimée par le modèle.
+$\widehat{Y}_i$ est appelée la valeur estimée par le modèle.
 
 Les quantités inobservables :
-$$\epsilon_i = y_i - \beta_0 - \beta_1x_i$$ 
+$$\epsilon_i = Y_i - \beta_0 - \beta_1x_i$$ 
 sont estimées par les quantités observables :
-$$ e_i= y-\widehat{y}_i$$ 
+$$ e_i= Y-\widehat{Y}_i$$ 
 
 - Les quantités $ei$ sont appelées les **résidus du modèle**.
 - La plupart des méthodes d’estimation : estimer la droite de régression par une droite qui minimise une fonction de résidus.
@@ -195,12 +201,11 @@ $$ e_i= y-\widehat{y}_i$$
 ## III.  Estimation - Méthode des moindres carrés
 ### Méthode 
 
-**Objectif** : Définir des estimateurs qui minimisent la somme des carrés des résidus (ou **erreur quadratique moyenne** EQM):
+**Objectif** : Définir des estimateurs qui minimisent la somme des carrés des résidus (ou **erreur quadratique moyenne** EQM).
 
-$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} e^2_i = \sum^{n}_{i=1} (Y_i - \widehat{Y}_i)^2 = \sum^{n}_{i=1} (Y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
 Les estimateurs sont donc les coordonnées du minimum de la fonction à deux variables :
 
-$$ z = f(\beta_0,\beta_1) = \sum^{n}_{i=1} (y_i - \beta_0 -  \beta_1x_i)^2 $$.
+$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} e^2_i = \sum^{n}_{i=1} (Y_i - \widehat{Y}_i)^2 = \sum^{n}_{i=1} (Y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
 
 Cette fonction est appelée la **fonction objectif**.
 
@@ -217,8 +222,8 @@ $$\frac{\delta EQM(\beta_0, \beta_1)}{\delta \beta_1} = -2 \sum x_i (Y_i - \beta
 Les estimateurs $(\widehat\beta_0^{MCO},\widehat\beta_1^{MCO})$ sont les solutions du système d'équation:
 $$ \Bigg\{
 \begin{align}
--2 \sum (y_i - \beta_0 - \beta_1x_i) = 0  \\ 
--2 \sum x_i (y_i - \beta_0 - \beta_1x_i) = 0
+-2 \sum (Y_i - \beta_0 - \beta_1x_i) = 0  \\ 
+-2 \sum x_i (Y_i - \beta_0 - \beta_1x_i) = 0
 \end{align}
 $$
 
@@ -229,36 +234,36 @@ $$
 
 Soient les equations suivantes: 
 
-$$(1) \sum{y}_i = n\widehat\beta_0 + \widehat\beta_1 \sum{x_i} $$
+$$(1) \sum{Y}_i = n\widehat\beta_0 + \widehat\beta_1 \sum{x_i} $$
 
-$$(2) \sum{x_iy_i} = \widehat\beta_0 \sum{x_i} + \widehat\beta_1 \sum{x^2_i}$$
-On utilise les notations usuelles des moyennes empiriques $$\overline{x}_n = \frac{1}{n}\sum{x_i} ,\ \ \ \ \ \ \overline{y}_n = \frac{1}{n}\sum{y_i}$$
+$$(2) \sum{x_iY_i} = \widehat\beta_0 \sum{x_i} + \widehat\beta_1 \sum{x^2_i}$$
+On utilise les notations usuelles des moyennes empiriques $$\overline{x}_n = \frac{1}{n}\sum{x_i} ,\ \ \ \ \ \ \overline{Y}_n = \frac{1}{n}\sum{Y_i}$$
 
-D'après (1): $$\widehat\beta_0 = \overline{y}_n - \widehat\beta_1 \overline{x}_n$$
+D'après (1): $$\widehat\beta_0 = \overline{Y}_n - \widehat\beta_1 \overline{x}_n$$
 
 D'après (2):
 
 \begin{eqnarray}
-\widehat\beta_1 \sum{x^2_i} & = & \sum{x_iy_i} - \widehat\beta_0 \overline{x}_n \\
-                            & = & \sum{x_iy_i} - n\overline{x}_n\overline{y}_n + \widehat\beta_1 (\overline{x}_n)^2
+\widehat\beta_1 \sum{x^2_i} & = & \sum{x_iY_i} - \widehat\beta_0 \overline{x}_n \\
+                            & = & \sum{x_iY_i} - n\overline{x}_n\overline{Y}_n + \widehat\beta_1 (\overline{x}_n)^2
 \end{eqnarray}
 
-Ainsi $$\widehat\beta_1 = \frac{\sum{x_iy_i} -  n\overline{x}_n\overline{y}_n}{\sum{x_i^2} -  n(\overline{x}_n)^2}$$
+Ainsi $$\widehat\beta_1 = \frac{\sum{x_iY_i} -  n\overline{x}_n\overline{Y}_n}{\sum{x_i^2} -  n(\overline{x}_n)^2}$$
 
 Et comme nous avons :
 
 \begin{eqnarray}
-\sum{(x_i-\overline{x}_n)(y_i-\overline{y}_n)} & = & \sum{x_iy_i} -  n\overline{x}_n\overline{y}_n \\
+\sum{(x_i-\overline{x}_n)(Y_i-\overline{Y}_n)} & = & \sum{x_iY_i} -  n\overline{x}_n\overline{Y}_n \\
                    \sum{(x_i-\overline{x}_n)}   & = & \sum{x_i^2} -  n(\overline{x}_n)^2
 \end{eqnarray}
 
-Nous obtenons: $$\widehat\beta_1 = \frac{\sum{(x_i-\overline{x}_n)(y_i-\overline{y}_n)}}{\sum{(x_i-\overline{x}_n)}}$$
+Nous obtenons: $$\widehat\beta_1 = \frac{\sum{(x_i-\overline{x}_n)(Y_i-\overline{Y}_n)}}{\sum{(x_i-\overline{x}_n)}}$$
 
 Dans la pratique, nous calculons $\widehat\beta_1$ puis $\widehat\beta_0$.
 
 Nous obtenons ainsi une estimation de la droite de régression, appelée la droite des moindres carrés ordinaires:
 
-$$\widehat{y}(x) = \widehat\beta_0 + \widehat\beta_1x$$
+$$\widehat{Y}(x) = \widehat\beta_0 + \widehat\beta_1x$$
 
 ---
 
@@ -300,7 +305,7 @@ Dans l’exemple « taille-poids », nous avons remarqué que lorsque nous mesur
 
 Variation totale de Y = Variation expliquée par le modèle + Variation inexpliquée par le modèle
 
-Soit $$(y_i - \overline{y}_n) = (\widehat{y}_i - \overline{y}_n) + (y_i - \widehat{y}_i)$$ avec $(\widehat{y}_i - \overline{y}_n)$ la différence expliquée par le modèle et $(y_i - \widehat{y}_i)$ la différence inexpliquée (ou résidu).
+Soit $$(Y_i - \overline{Y}_n) = (\widehat{Y}_i - \overline{Y}_n) + (Y_i - \widehat{Y}_i)$$ avec $(\widehat{Y}_i - \overline{Y}_n)$ la différence expliquée par le modèle et $(Y_i - \widehat{Y}_i)$ la différence inexpliquée (ou résidu).
 
 ---
 
@@ -347,6 +352,41 @@ Hypothèses fondamentales:
 ---
 
 ## V. Test et IC
+### Test des paramètres
+
+On se pose la question de l'effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
+
+**Conditions d'applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
+
+*Test d'ajustement des résidus à une gaussienne*:
+
+- Test de Kolmogoroff-Smirnoff (fondé sur les fonctions de répartition). Ce test à une tendance à rejeter l'hypothèse de normalité.
+
+- Test du QQ plot 
+
+TO DO: exemple sous R
+
+---
+
+## V. Test et IC
+### Test des paramètres
+
+On se pose la question de l'effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
+
+**Conditions d'applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
+
+**Statistique du test**: SI l'hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_1,n-2} = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ suit la loi de Student $t(n-2)$
+
+**Décision et conclusion du test**: La valeur critique du test, notée $c_\alpha$ est lue dans une tabe de la loi de Student.
+
+Si la valeur absolue de la valeur de la statistiqu calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est supérieure ou égale a $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d'erreur de premi§dre esp§ece $\alpha$.
+
+Si la valeur absolue de la valeur de la statistiqu calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est strictement inférieure a $c_\alpha$, alors le test n'est pas significatif. Vous consrvez $\mathcal{H}_0$ avec un risque d'erreur de deuxieme expece $\beta$ a évaluer. 
+
+
+---
+
+## V. Test et IC
 ### Notations
 
 -$\widehat\sigma^2_n$ : la variance résiduelle
@@ -366,25 +406,6 @@ $$ s^2_{\beta_1} = \frac{\widehat\sigma^2_n}{ns^2_x}$$
  $$ s^2_{\beta_0} = \widehat\sigma^2_n\Big(\frac{1}{n}+\frac{\overline{x}_n}{ns^2_x}\Big)$$
  
 TO DO" exeple  dans R pour récupérer l'estimation de la variance résiduelle avec smmary : carré de risudal standard error"
-
-
----
-
-## V. Test et IC
-### Test des paramètres
-
-On se pose la question de l'effet de la variable $X$ :$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
-
-**Conditions d'applications du test**: Les variables aléatoire $\espilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
-
-**Statistique du test**: SI l'hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_1,n-2} = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ suit la loi de Student $t(n-2)$
-
-**Décision et conclusion du test**: La valeur critique du test, notée $c_\alpha$ est lue dans une tabe de la loi de Student.
-
-Si la valeur absolue de la valeur de la statistiqu calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est supérieure ou égale a $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d'erreur de premi§dre esp§ece $\alpha$.
-
-Si la valeur absolue de la valeur de la statistiqu calculée sur l'echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs) = \frac{\widehat\beta_1}{s_{\widehat\beta_1}}$ est strictement inférieure a $c_\alpha$, alors le test n'est pas significatif. Vous consrvez $\mathcal{H}_0$ avec un risque d'erreur de deuxieme expece $\beta$ a évaluer. 
-
 
 ---
 
