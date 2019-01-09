@@ -187,7 +187,7 @@ DT::datatable(d, width = "100%")
 
 Représentation des données poids et tailles
 
-**Question** : comment définir la droite de regression?
+**Question** : comment définir la droite de regression ?
 
 ```{r echo=FALSE}
 layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
