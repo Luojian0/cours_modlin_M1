@@ -1,0 +1,262 @@
+% -*- TeX -*- -*- FR -*-
+\documentclass[11pt,a4paper]{article}
+
+%\usepackage{isolatin1}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx,epsfig}
+\usepackage[french]{babel}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+%%%%%%%%%% Marges
+\oddsidemargin 0cm \evensidemargin -1cm \topmargin -1cm
+\textheight 24cm \textwidth 15cm
+
+
+%%%%%%%%%% Raccourcis pour les outils
+\newcommand{\argmin}{\displaystyle \mathop{argmin}}
+\newcommand{\tend}{\displaystyle \mathop{\longrightarrow}}
+\newcommand{\somme}{\displaystyle \sum}
+\newcommand{\mytilde}{$\sim$}
+\newcommand{\fleche}{\texttt{<-}}%$\mathbf{<\!\!-}$\;}
+
+%%%%%%%%%% C'est plus beau comme �a...
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\epsilon}{\varepsilon} 
+\renewcommand{\phi}{\varphi}
+
+%%%%%%%%% Raccourcis usuels
+\def\1{\mbox{1\hspace{-.35em}1}}
+\def\R{\mathbb{R}}
+\def\B{\mathbb{B}}
+\def\N{\mathbb{N}}
+\def\P{\mathbb{P}}
+\def\E{\mathbb{E}}
+\def\L{\mathbb{L}}
+\def\F{\mathbb{F}}
+\def\R{\mathbb{R}}
+\def\C{\mathbb{C}}
+\def\Z{\mathbb{Z}}
+\def\G{\mathbb{G}}
+\def\D{\mathbb{D}}
+\def\H{\mathbb{H}}
+\def\v{\mbox{Var\,}}
+\def\lip{\mbox{Lip\,}}
+\def\Lip{\mbox{Lip\,}}
+\def\cov{\mbox{Cov}}%
+
+\newtheorem{Theoreme}{Th\'eor\`eme}%[section]
+\newtheorem{Proposition}{Proposition}[]%[Theoreme]{Proposition}
+\newtheorem{Corollaire}[Proposition]{Corollaire}
+\newtheorem{Lemme}[Proposition]{Lemme}
+%\newtheorem{Definition}[Theoreme]{D\'efinition}
+\newcommand{\findem}{\hfill\hbox{\hskip 4pt
+\vrule width 2pt height 6pt depth 1.5pt}\vspace{.5cm}\par}
+
+\newenvironment{code}{ \VerbatimEnvironment \begin{Verbatim}[commandchars=\\\{\}]}{\end{Verbatim}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+   \newtheorem{exercice}{\textbf{Exercice}}
+
+
+%%%%%%%%%%
+
+
+%\newcommand{\ms}{\noalign{\vspace{3\p@ plus2\p@ minus1\p@}}}
+%\newcommand{\boldarrayrulewidth}{0.5\p@}
+%\newcommand{\midarrayrulewidth}{0.25\p@}
+
+
+% Weighted rules for tables
+%\newcommand{\toprule}{\ms\topline\ms}
+%\newcommand{\midrule}{\ms\midline\ms}
+%\newcommand{\bottomrule}{\ms\topline}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%\pagestyle{fancy}
+%\lhead{ }
+%\rhead{ }
+%\} {0cm}{1cm}{0cm}{1cm}
+
+
+\begin{document}
+
+\noindent Modèle Linéaire
+\hspace{10.5cm}
+2016-2017
+
+
+
+
+\begin{center}
+\textbf{TP -- Régression linéaire simple}
+
+\end{center}
+
+\vspace{1cm}
+
+
+\begin{exercice}
+\end{exercice}
+Récupérer la base \verb+anscombe+.
+\begin{code}
+> data(anscombe)
+> attach(anscombe)
+\end{code}
+\begin{enumerate}
+\item Réaliser l'ajustement d'un modèle linéaire simple pour chacun des 4 jeux de données \verb+(x1,y1)+, \verb+(x2,y2)+, \verb+(x3,y3)+ et \verb+(x4,y4)+ à l'aide de la fonction \verb+lm+. On ne demande pas de réaliser l'étude des résidus.
+\item Comparer les principales statistiques de l'ajustement, données par la fonction \verb+summary+.
+\item Faire les représentations graphiques de \verb+(x1,y1)+, \verb+(x2,y2)+, \verb+(x3,y3)+ et \verb+(x4,y4)+ ainsi que des droites de régression linéaire obtenues. Commenter.
+\end{enumerate}
+
+\vspace{1cm}
+
+
+\begin{exercice}
+\end{exercice}
+On utilise la base \verb+cats+ de la library \verb+MASS+.
+\begin{code}
+> library(MASS)
+> attach(cats)
+\end{code}
+On souhaite expliquer le poids du coeur (Hwt) par le poids du corps (Bwt)
+
+\begin{enumerate}
+	\item Tracer un nuage de points représentant le poids du coeur en fonction du poids du corps.
+	\item On cherche à étudier la relation linéaire entre ces deux variables. On utilise pour cela la fonction \verb+lm+ de R. 
+\begin{code}
+> cats.lm \fleche lm(Hwt \mytilde Bwt)
+> summary(cats.lm)
+\end{code}
+Commenter les résultats obtenus.
+\item Tracer la droite de régression estimée par le modèle linéaire sur le nuage de points.
+\item Faire l'étude des résidus.
+
+\end{enumerate}
+
+
+\vspace{1cm}
+
+
+\begin{exercice}
+\end{exercice}
+On utilise la base \verb+cars+ de \verb+R+. Ce paquet contient deux variables : la vitesse et la distance de freinage de 50 voitures, mesurées en 1920. On souhaite expliquer la distance de freinage \verb+dist+ par la vitesse de la voiture \verb+speed+.
+
+\begin{enumerate}
+	\item Tracer un nuage de points représentant la distance de freinage en fonction de la vitesse de la voiture.
+	\item On cherche à étudier la relation linéaire entre ces deux variables à l'aide de la fonction \verb+lm+ de R. Commenter les résultats obtenus.
+	\item Tracer la droite de régression estimée par le modèle linéaire sur le nuage de points.
+\item Faire les représentations graphiques des résidus studentisés et tester les hypothèses du modèle.
+\item Représenter les intervalles de confiance et de prédiction.
+\item On souhaite manitenant expliquer la distance de freinage par le carré de la vitesse. On introduit \verb+speed2 <- speed^2+. Faire la représentation graphique et ajuster le modèle avec une contrainte de contante nulle : $dist_i=a\cdot speed2_i+\epsilon_i$. Pour cela on utilisera la commande \texttt{cars.lm2 \fleche~lm(dist\mytilde 0+speed2)}. Comparer les résultats obtenus avec le premier modèle.
+
+\end{enumerate}
+
+
+
+
+\vspace{1cm}
+
+
+\begin{exercice}
+\end{exercice}
+On utilise la base \verb+p9.10+ du paquet \verb+MPV+. L'objectif est d'expliquer l'usure de l'asphalte \verb+y+ en fonction des caractéristiques du revêtement. Nous nous intéresserons plus spécifiquement à l'influence de la viscosité, donnée par \verb+x1+ en échelle logarithmique.
+
+\begin{enumerate}
+	\item Faire l'ajustement du modèle linéaire de \verb+y+ par rapport à \verb+x+. Vérifier les hypothèses du modèle. Qu'en concluez-vous ?
+	\item Au vu des représentations graphiques (\verb+pairs(p9.10)+) on souhaite faire intervenir dans le modèle la variable \verb+x4+. Cette variable est un indicateur prenant les valeurs \verb+-1+ et \verb|+1|.
+	\begin{enumerate}
+	\item Ajuster un modèle de régression linéaire sur le sous-ensemble \verb+x4==-1+. On pourra utiliser l'option \verb+subset+ de \verb+lm+. Faire l'étude des résidus.
+	\item Ajuster un modèle de régression linéaire sur le sous-ensemble \verb|x4==+1|. Faire l'étude des résidus.
+\end{enumerate}	 
+	
+
+\end{enumerate}
+
+%\begin{exercice}
+%\end{exercice}
+%On utilise la base \verb+khct+ du paquet \verb+caschrono+. On récupère deux variables : la consommation électrique mensuelle en kilo-Watt-heures et \Verb+temperature+, qui correspond à la somme sur le mois des $(temp_i-65)_+$ où $temp_i$ est la température moyenne sur une journée, en degré Farenheit (65$^o$F correspond environ à 18$^o$C).
+%\begin{code}
+%> library(caschrono)
+%> data(khct)
+%> conso <- khct[,"kwt"]
+%> temperature <- khct[,"cldd"]
+%\end{code}
+%On souhaite expliquer  la consommation électrique en kWh \verb+conso+ en fonction de la variable \verb+temperature+ à l'aide d'un modèle linéaire simple gaussien.
+%
+%Faire l'analyse.
+%
+%\vspace{1cm}
+%
+%\begin{exercice}
+%\end{exercice}
+%On utilise la base \verb+airquality+ de R.
+%\begin{code}
+%> attach(airquality)
+%\end{code}
+%On souhaite expliquer le taux d'ozone \verb+Ozone+ par la vitesse du vent \verb+Wind+.
+%
+%Faire l'analyse.
+
+
+%
+%\vspace{1cm}
+%
+%\begin{exercice}
+%\end{exercice}
+%On utilise la base \verb+co2+ de \verb+R+. On récupère deux variables : les dates de mesures et la consommation électrique à ces dates.
+%\begin{code}
+%> library(caschrono)
+%> data(khct)
+%> conso <- khct[,"kwt"]
+%> temps <- time(khct)
+%\end{code}
+%On souhaite expliquer  la consommation électrique en kWh \verb+conso+ en fonction du temps \verb+temps+ à l'aide d'un modèle linéaire simple gaussien.
+%
+%Faire l'analyse.
+
+
+
+
+
+%\vspace{1em}
+%\textbf{Options de la fonction} \verb+plot+ 
+%\vspace{0.5em}
+
+
+%\vspace{-15pt}
+%\begin{table}[h]
+%\begin{tabular} {l l}
+%\verb+main="Le titre"+ & titre du graphe \\
+%\verb+sub="Le sous-titre"+ & sous-titre du graphe \\
+%\verb+xlab="",ylab=""+ & légende des axes \\
+%\verb+xlim=c(xa,xb)+ & limites des axes \\
+%\verb+ylim=c(ya,yb)+ & \\
+%\verb+type=""+ & par défaut : "p" pour points\\
+%&sinon "l", "o", "h" ou "s" \\
+%\verb+log=""+ & échelle logarithmique pour les X ("x"),\\
+%&  pour les Y ("y") ou les 2("xy")\\
+%\verb+pch=n, lty=n+ & symbole ou type de ligne utilisé \\
+%\verb+col=n+ & couleur\\
+%\verb+font=n,cex=n+ & fonte et taille du texte et des symboles \\
+%%{\sf } & \\
+
+%\end{tabular}
+%\end{table}
+%%\vspace{-5pt}
+%Pour plus de détails, voir \verb+help(par)+
+
+\end{document}
+
+% -*- TeX -*- -*- FR -*-
+
