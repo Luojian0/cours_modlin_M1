@@ -177,7 +177,7 @@ plot(d$taille, d$poids, main="poids~taille", ylab="poids", xlab="taille")
 m = lm(poids~taille, d)
 m$coefficients
 abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
-arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1))
 legend("topleft",c("E(Y)", "epsilon"), col=c(2,4), lty=1, cex=.8)
 ```
 
@@ -229,7 +229,7 @@ abline(v=d$taille[i], h=d$poids[i], lty=2, col=2)
 axis(1, at=d$taille[i], "x_i", las=2, col=2)
 axis(4, at=d$poids[i], "Y_i", las=2, col=2)
 abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=1) # /!\ y = b.x + a
-arrows(d$taille[i], d$poids[i], d$taille[i], d$poids[i]-m$residuals[i], col=4, length=0.1)
+suppressWarnings(arrows(d$taille[i], d$poids[i], d$taille[i], d$poids[i]-m$residuals[i], col=4, length=0.1))
 text(d$taille[i], d$poids[i]-m$residuals[i]/2, "eps_i", col=4, las=2, pos=4)
 
 ```
@@ -265,7 +265,7 @@ res =  d$poids - (beta_0 + beta_1*d$taille)
 eqm = sum(res^2)
 plot(d$taille, d$poids, main=paste0("poids~taille, EQM=", round(eqm)), ylab="poids", xlab="taille")
 abline(a=beta_0, b=beta_1, col=2) # /!\ y = b.x + a
-arrows(d$taille, d$poids, d$taille, d$poids-res, length=0.1, col=adjustcolor(4, alpha.f=0.5))
+suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-res, length=0.1, col=adjustcolor(4, alpha.f=0.5)))
 
 beta_0 = -100
 beta_1 = 1
@@ -449,7 +449,7 @@ m$coefficients
 abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
 # residuals
 m$residuals
-arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1))
 legend("topleft",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
 ```
 
@@ -514,13 +514,15 @@ Hypothèses fondamentales:
 ## V. Test statistique et IC/IP
 ### Test des paramètres
 
-On se pose la question de l’effet de la variable $X$ :
+On se pose la question de l’effet de la variable $x$ :
 
 $\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
 
 **Conditions d’applications du test** : Les variables aléatoire $\epsilon_i$ sont indépendantes et suivent la loi normale centrée et de variance $\sigma^2$.
 
 *Test d’ajustement des résidus à une gaussienne* :
+
+- Test de shapiro
 
 - Test de Kolmogoroff-Smirnoff (fondé sur les fonctions de répartition). Ce test à une tendance à rejeter l’hypothèse de normalité.
 
@@ -532,10 +534,6 @@ TO DO: exemple sous R
 
 ## V. Test statistique et IC/IP
 ### Test des paramètres
-
-$\mathcal{H}_0 : {\beta_1 = 0}$ contre $\mathcal{H}_1 : {\beta_1 \neq 0}$
-
-**Conditions d’applications du test** : Les variables aléatoire $\epsilon_i$ sont indépndantes et suivent la loi normale centrée et de variance $\sigma^2$.
 
 **Statistique du test** : Si l’hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_1,n-2} = \frac{\widehat\beta_1-0}{s_{\widehat\beta_1}}$ suit la loi de Student $\mathcal{T}(n-2)$
 
