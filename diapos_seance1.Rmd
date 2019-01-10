@@ -7,8 +7,9 @@ output: slidy_presentation
 ---
 
 ```{r setup, include=FALSE}
+# README RStudio config, uncheck: # preferences > R Markdown > show output inline for... 
 options(htmltools.dir.version = FALSE, width = 75)
-knitr::opts_chunk$set(echo = TRUE, fig.align="center", dev="png", dpi = 95, out.width = "100%")
+knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.heigh=5, fig.align="center", dev="png", dpi = 95, out.width = "100%", echo=FALSE, results="hide")
 d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
 d$sex = as.factor(d$sex)
 ```
@@ -91,7 +92,7 @@ Dans le cas de la regression linéaire simple, $Y$ est une **fonction affine** (
 $$Y  = \beta_0 + \beta_1x  $$
 
 
-```{r  echo=FALSE, fig.width=12, fig.heigh=6, results="hide"}
+```{r  echo=FALSE, results="hide"}
 layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
 
 plot(d$taille, d$poids, main="poids~taille", ylab="poids", xlab="taille")
@@ -140,7 +141,7 @@ Par exemple la température $X$ en degrés Celsius, $Y$ en degrés Farenheit : $
 Ici nous avons en identifiant : $\beta_0 = 32$ et $\beta_1 = 9/5$. 
 
 
-```{r  echo=FALSE, fig.width=12, fig.heigh=6, results="hide"}
+```{r  echo=FALSE, results="hide"}
 layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
 beta_0 = 32
 beta_1 = 9/5
@@ -161,23 +162,21 @@ Si ce cas déterministe n’est pas vérifié, il faut chercher la droite qui aj
 
 $$Y   = \beta_0 + \beta_1x + \epsilon $$
 
-où $\beta_0$ et $\beta_1$ sont des réels fixes, mais inconnus, et $\epsilon$ une variable représentant le comportement individuel.
+où $\beta_0$ et $\beta_1$ sont des réels fixes, mais inconnus, et $\epsilon$ une variable représentant le comportement individuel (résidus).
 
 Modèle : $$E(Y)  = f(x) = \beta_0 + \beta_1 x$$
 
-*Par exemple $x$ en la taille, $Y$ le poids, à une même taille, plusieurs poids peuvent correspondrent. Les données ne sont plus alignées.*
+*Par exemple $x$ est la taille, $Y$ le poids, à une même taille, plusieurs poids peuvent correspondrent. Les données ne sont plus alignées.*
 
+```{r}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
 
----
-
-## II.  Présentation du modèle
-### Exemple
-
-Base de donnée `data_nutri`
-
-```{r echo=FALSE}
-DT::datatable(d, width = "100%")
-# head(d)
+plot(d$taille, d$poids, main="poids~taille", ylab="poids", xlab="taille")
+m = lm(poids~taille, d)
+m$coefficients
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
+arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+legend("topleft",c("E(Y)", "epsilon"), col=c(2,4), lty=1, cex=.8)
 ```
 
 ---
@@ -185,9 +184,18 @@ DT::datatable(d, width = "100%")
 ## II.  Présentation du modèle
 ### Exemple
 
-Représentation des données poids et tailles
+Base de données `data_nutri`
 
-**Question** : comment définir la droite de regression ?
+```{r results="verbatim"}
+DT::datatable(d, width = "100%")
+# head(d)
+```
+
+---
+
+## II.  Présentation du modèle
+
+**Exemple** : représentation des données *poids~tailles*. **Question** : comment définir la droite de regression ?
 
 ```{r echo=FALSE}
 layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
@@ -207,6 +215,29 @@ En analyse de régression linéaire, pour un individu $i$ :
 - la composante aléatoire de $Y_i$ est le $ε_i$ correspondant
 
 
+```{r echo=FALSE}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+plot(d$taille, d$poids, main="poids~taille", ylab="poids", xlab="taille", col=adjustcolor(1, alpha.f=0.5))
+m = lm(poids~taille, d)
+# abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
+pred = predict(m, data.frame(taille=d$taille))
+i = which(d$poids - pred == max(d$poids - pred))
+points(d$taille[i], d$poids[i], pch=16, col=2)
+abline(v=d$taille[i], h=d$poids[i], lty=2, col=2)
+axis(1, at=d$taille[i], "x_i", las=2, col=2)
+axis(4, at=d$poids[i], "Y_i", las=2, col=2)
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=1) # /!\ y = b.x + a
+arrows(d$taille[i], d$poids[i], d$taille[i], d$poids[i]-m$residuals[i], col=4, length=0.1)
+text(d$taille[i], d$poids[i]-m$residuals[i]/2, "eps_i", col=4, las=2, pos=4)
+
+```
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Droite de regression
+
+
 Pour l’instant, la droite de régression est inconnue.
 Tout le problème est d’estimer $\beta_0$ et $\beta_1$ à partir d’un échantillon de données.
 
@@ -217,6 +248,92 @@ Avec $\widehat{Y}(x)$ un estimateur de la moyenne théorique $\mu_Y(x)$ ($\wideh
 $\mu_Y(x)$ n’est ni observable, ni calculable (il faudrait alors recenser **tous** les individus de la population).
 
 *Remarque* : la moyenne empirique de $Y$, définie par $\overline{Y}_n(x) = \frac{1}{n}\sum^n_{i=1}Y_i(x)$ est un autre estimateur de $\mu_Y(x)$ . Si le modèle est bon, $\widehat{Y}(x)$ est plus précis que $\overline{Y}_n(x)$
+
+
+---
+
+## III.  Estimation - Méthode des moindres carrés
+### Droite de regression, intutition des moindres carrés 
+
+```{r echo=TRUE}
+layout(matrix(1, 1, byrow=TRUE), respect=TRUE)
+beta_0 = mean(d$poids)
+beta_1 = 0
+res =  d$poids - (beta_0 + beta_1*d$taille)
+eqm = sum(res^2)
+plot(d$taille, d$poids, main=paste0("poids~taille, EQM=", round(eqm)), ylab="poids", xlab="taille")
+abline(a=beta_0, b=beta_1, col=2) # /!\ y = b.x + a
+arrows(d$taille, d$poids, d$taille, d$poids-res, length=0.1, col=adjustcolor(4, alpha.f=0.5))
+
+beta_0 = -100
+beta_1 = 1
+res =  d$poids - (beta_0 + beta_1*d$taille)
+eqm = sum(res^2)
+plot(d$taille, d$poids, main=paste0("poids~taille, EQM=", round(eqm)), ylab="poids", xlab="taille")
+abline(a=beta_0, b=beta_1, col=2) # /!\ y = b.x + a
+suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-res, length=0.1, col=adjustcolor(4, alpha.f=0.5)))
+
+beta_0 = -260
+beta_1 = 2
+res =  d$poids - (beta_0 + beta_1*d$taille)
+eqm = sum(res^2)
+plot(d$taille, d$poids, main=paste0("poids~taille, EQM=", round(eqm)), ylab="poids", xlab="taille")
+abline(a=beta_0, b=beta_1, col=2) # /!\ y = b.x + a
+suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-res, length=0.1, col=adjustcolor(4, alpha.f=0.5)))
+
+```
+
+---
+
+
+## III.  Estimation - Méthode des moindres carrés
+### Droite de regression, intutition des moindres carrés 
+
+```{r echo=TRUE}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+results = list()
+for(beta_0 in 0:-260) {
+  for(beta_1 in seq(0,2, length.out=70)) {
+    res =  d$poids - (beta_0 + beta_1*d$taille)
+    eqm = sum(res^2)
+    results[[length(results)+1]] = c(beta_0=beta_0, beta_1=beta_1, eqm=eqm)
+  }
+}
+results = as.data.frame(do.call(rbind, results))
+min(results$eqm)
+r = results[results$eqm==min(results$eqm),]
+beta_0 = r[["beta_0"]]
+beta_1 = r[["beta_1"]]
+res =  d$poids - (beta_0 + beta_1*d$taille)
+eqm = sum(res^2)
+plot(d$taille, d$poids, main=paste0("poids~taille, EQM=", round(eqm)), ylab="poids", xlab="taille")
+abline(a=beta_0, b=beta_1, col=2) # /!\ y = b.x + a
+suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-res, length=0.1, col=adjustcolor(4, alpha.f=0.5)))
+
+```
+
+```{r echo=FALSE, eval=FALSE}
+# f <- function(beta_0, beta_1) {
+#   res =  d$poids - (beta_0 + beta_1*d$taille)
+#   eqm = sum(res^2)
+#   return(eqm)
+# }
+# x = 0:-260
+# y = seq(0,2, length.out=70)
+# z = outer(x, y, f)
+# graphics::persp(x, y, z)
+# results$beta_0, results$beta_1, results$eqm)
+
+# plot(density(results$eqm))
+# results$leqm = log10(results$eqm)
+# plot(density(results$leqm))
+# results$nleqm=(results$leqm - min(results$leqm)) / max((results$leqm - min(results$leqm)))
+# plot(density(results$nleqm))
+plot(results$beta_0, results$beta_1, col=1, cex = 0.01 * (1-results$nleqm))
+# persp(x=1:10, y=1:10, z=t(foo), phi = 30, theta = 20, d = 5)
+
+```
+
 
 ---
 
@@ -318,8 +435,7 @@ $\widehat\beta_1$ correspond à la pente.
 Attention, la technique des MCO crée des estimateurs sensibles aux valeurs atypiques.
 
 ```{r}
-# README RStudio config, uncheck: # preferences > R Markdown > show output inline for... 
-#layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+layout(1, respect=TRUE)
 plot(d$taille, d$poids, main="poids~taille")
 ## Model
 # Y~X
