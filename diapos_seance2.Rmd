@@ -282,6 +282,22 @@ $$\left(\begin{array}
 \end{array}\right) 
 $$
 
+---
+
+## III.  Estimation 
+### Maximum de vraisemblance
+
+La vraisemblance vaut
+$$\mathcal{L}(Y,\beta,\sigma^2) = \Big(\frac{1}{\sqrt{2\pi\sigma^2}}\Big)^nexp\Big[\frac{1}{2\sigma^2}\sum^n_{i=1}(y_i-x'_i\beta)^2\Big]
+$$
+$$\mathcal{L}(Y,\beta,\sigma^2) = \Big(\frac{1}{\sqrt{2\pi\sigma^2}}\Big)^nexp\Big[\frac{1}{2\sigma^2}||Y-X\beta||^2\Big]
+$$
+
+D'où l'on déduit la log-vraisemblance
+
+$$log\mathcal{L}(Y,\beta,\sigma^2) = \frac{n}{2}log(2\pi) -\frac{n}{2}log(\sigma^2) - \frac{1}{2\sigma^2}||Y-X\beta||^2
+$$
+Pour maximiser la log-vraisemblance, il faut d'abord minimiser la quantité $||Y-X\beta||^2$, ce qui est justement le principe des moindres carrés ordinaires.
 
 ---
 
@@ -688,10 +704,6 @@ algorithme. En effet, pour décider d’ajouter ou de supprimer une variable dan
 
 
 On souhaite expliquer l'espérance de vie Life.Exp en fonction des autres variables. On va utiliser pour cela une méthode descendante.
-
-```{r}
-extractAIC(life.lm)
-```
 
 Si nous souhaitons minimiser le critère AIC, nous pouvons l'obtenir de la façon suivante :
 

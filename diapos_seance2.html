@@ -364,6 +364,17 @@ n &amp; \sum{x_i}\\
 </div>
 <div class="slide section level1">
 
+<h2 id="iii.-estimation">III. Estimation</h2>
+<h3 id="maximum-de-vraisemblance">Maximum de vraisemblance</h3>
+<p>La vraisemblance vaut <span class="math display">\[\mathcal{L}(Y,\beta,\sigma^2) = \Big(\frac{1}{\sqrt{2\pi\sigma^2}}\Big)^nexp\Big[\frac{1}{2\sigma^2}\sum^n_{i=1}(y_i-x'_i\beta)^2\Big]
+\]</span> <span class="math display">\[\mathcal{L}(Y,\beta,\sigma^2) = \Big(\frac{1}{\sqrt{2\pi\sigma^2}}\Big)^nexp\Big[\frac{1}{2\sigma^2}||Y-X\beta||^2\Big]
+\]</span></p>
+<p>D’où l’on déduit la log-vraisemblance</p>
+<p><span class="math display">\[log\mathcal{L}(Y,\beta,\sigma^2) = \frac{n}{2}log(2\pi) -\frac{n}{2}log(\sigma^2) - \frac{1}{2\sigma^2}||Y-X\beta||^2
+\]</span> Pour maximiser la log-vraisemblance, il faut d’abord minimiser la quantité <span class="math inline">\(||Y-X\beta||^2\)</span>, ce qui est justement le principe des moindres carrés ordinaires.</p>
+</div>
+<div class="slide section level1">
+
 <h2 id="iv.-analyse-de-la-variance">IV. Analyse de la variance</h2>
 <h3 id="variation-expliquee-et-inexpliquee">Variation expliquée et inexpliquée</h3>
 <p>La variation de <span class="math inline">\(Y\)</span> vient du fait de sa dépendance aux variables explicatives <span class="math inline">\(X\)</span>. C’est la <strong>variation expliquée par le modèle</strong>.</p>
@@ -759,8 +770,6 @@ life.pred</code></pre></div>
 <h2 id="vi.-selection-de-variables-3">VI. Sélection de variables</h2>
 <h3 id="exemple-detaille-sous-r">Exemple détaillé sous R</h3>
 <p>On souhaite expliquer l’espérance de vie Life.Exp en fonction des autres variables. On va utiliser pour cela une méthode descendante.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">extractAIC</span>(life.lm)</code></pre></div>
-<pre><code>## [1]   4.00000 -25.91958</code></pre>
 <p>Si nous souhaitons minimiser le critère AIC, nous pouvons l’obtenir de la façon suivante :</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">life.lm &lt;-<span class="st"> </span><span class="kw">lm</span>(Life.Exp <span class="op">~</span><span class="st"> </span>., <span class="dt">data=</span>stateEU) 
 <span class="kw">summary</span>(life.lm)</code></pre></div>
