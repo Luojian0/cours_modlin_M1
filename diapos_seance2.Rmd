@@ -1,8 +1,8 @@
 ---
 title: "Modèle linéaire"
-subtitle: "Séance 2 - Régression linéaire simple et multiple"
+subtitle: "Séance 2 - Régression linéaire multiple"
 author: "Florent Chuffart & Magali Richard"
-date: "10 Janvier 2019"
+date: "24 Janvier 2019"
 output: slidy_presentation
 ---
 
@@ -58,21 +58,50 @@ II) Présentation du modèle
 III) Estimation (méthode des moindres carrés)
 IV) Décomposition de la variance 
 V) Test statistique et IC
-VI) Exemple détaillé sous R
+VI) Sélection de variables
+
+---
+
+## I.  Introduction
+### Rappels regression linéaire simple
+
+**Objectif de la regression linéaire simple**: considérons $x$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variable explicative $x$. 
+
+Modèle : $$E(Y)  = f(x) = \beta_0 + \beta_1 x$$
+
+*la méthode des moindres carrés ordinaires (MCO)*: 
+
+$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
+
+Soit 
+$$ \sum(Y_i - \overline{Y}_n)^2 = \sum(\widehat{Y}_i - \overline{Y}_n)^2 + \sum(Y_i - \widehat{Y}_i)^2 $$
+$$ SC_{tot} = SC_{reg} + SC_{res}$$ 
+
+avec $\widehat{Y}_i$ la valeur estimée par le modèle  pour $i=1,...,n$ et $\overline{Y}_n$  la moyenne empirique des observations sur $n$.
+
+```{r}
+d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
+d$sex = as.factor(d$sex)
+layout(1, respect=TRUE)
+plot(d$taille, d$poids, main="poids~taille")
+## Model
+# Y~X
+# E(Y) = b.X
+# E(Y) = b_0 + b_1.X
+# Y_i = b_0 + b_1.X_i + e_i
+m = lm(d$poids~d$taille)
+m$coefficients
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
+# residuals
+m$residuals
+suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1))
+legend("topleft",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
+```
 
 ---
 
 ## I.  Introduction
 
-Regression linéaire simple:
-
-Considérons $x$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variable explicative $x$. 
-
-Modèle : $$E(Y)  = f(x) = \beta_0 + \beta_1 x$$
-
-**la méthode des moindres carrés ordinaires (MCO)**: $$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
-
-Soit $$ SC_{tot} = SC_{reg} + SC_{res}$$ 
 
 **Objectif de la regression linéaire multiple**: chercher une relation entre la variable observée $Y$ et plusieurs variables explicative $X_1, ..., X_p$. 
 
@@ -80,6 +109,8 @@ Soit $$ SC_{tot} = SC_{reg} + SC_{res}$$
 ---
 
 ## II. Présentation du modèle
+
+**Objectif de la regression linéaire multiple**: chercher une relation entre la variable observée $Y$ et plusieurs variables explicative $X_1, ..., X_p$. 
 
 Y est expliquée (modélisée) par  les variables explicatives $X_1, ..., X_p$. 
 
@@ -125,9 +156,11 @@ Représentation des donnée.
 
 ```{r}
 # README RStudio config, uncheck: # preferences > R Markdown > show output inline for... 
-layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+layout(matrix(1:4, 2, byrow=TRUE), respect=TRUE)
 plot(Life.Exp, Murder, main="life.Exp~Murder")
 plot(Life.Exp, HS.Grad, main="life.Exp~HS Grad")
+plot(Life.Exp, Frost, main="life.Exp~Frost")
+plot(Life.Exp, Population, main="life.Exp~Population")
 ```
 
 
@@ -336,6 +369,25 @@ où $n$ est le nombre d'individus/observations, $p$ est le nombre de variables e
 ## V. Test statistique et IC
 ### Etudes des résidus
 
+**Effet levier, distance de Cook**
+
+Le terme $h_{ij}$ représente le poids de l’observation $i$ sur sa propre estimation. On peut montrer que: 
+$$ \widehat{Y_i} = h_{ij}Y_i + \sum_{j\neq i}h_{ij}Y_j$$
+$$ h_{ij} = \frac{1}{n} + \frac{(x_i - \overline{x})(x_j - \overline{x}) }{\sum^n_{h=1}(x_h-\overline{x})^2}$$
+
+Si $h_{ij}$ est grand ($\geq \frac{1}{2}$), alors le point $i$ est un point levier (point atypique).
+
+La distance de Cook est utilisée pour mesurer l’influence de l’observation  $i$ sur l’estimation:
+
+$$ D_i= \frac{\sum^n_{j=1}(\widehat{Y}_{(i)j}-\widehat{Y}_j)^2}{2\widehat\sigma^2} = \frac{h_{ij}}{2(1-h_{ij})}r^2_i$$
+
+On peut utiliser différents seuils (par exemple $D_i >1$, ou $D_i >4/n$)
+
+---
+
+## V. Test statistique et IC
+### Etudes des résidus
+
 **Représentation graphique**
 
 On représente les principaux graphiques sur les résidus.
@@ -343,27 +395,42 @@ On représente les principaux graphiques sur les résidus.
 ```{r}
 life.lm = lm(Life.Exp ~ Murder + HS.Grad + Frost, data = stateEU)
 layout(matrix(1:4, 2, byrow=TRUE), respect=TRUE)
-plot(life.lm)
+plot(life.lm, which=1:4)
 ```
 
-Toutes les hypothèses semblent véri ées : pas de structure dans le premier graphique ni dans le troisième, pas d'homoscédasticité au vu du premier graphique, hypothèse gaussienne non remise en cause par le QQ-plot et aucun point aberrant d'après la distance de Cook.
+Toutes les hypothèses semblent vérifiées : 
+
+1) pas de structure dans le premier graphique ni dans le troisième (résidus standardisé). Les résidus étant centrés, la droite horizontale d’ordonnée 0 est ajoutée, pour pouvoir juger plus facilement de la répartition aléatoire des points. Si le graphique présente une quelconque structure, il convient de réfléchir à une nouvelle modélisation.
+2) pas d'homoscédasticité au vu du premier graphique, 
+3) hypothèse gaussienne non remise en cause par le QQ-plot (comparaison quantiles observés avec quantiles théoriques)
+4) aucun point aberrant d'après la distance de Cook.
+
+
+```{r}
+stateEU[c("HI", "NV", "WA", "ME", "SC"),]
+```
 
 On vérifie plus précisément l'hypothèse d'indépendance des résidus. On peut représenter l'autocorrélation des résidus
 
 ```{r}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
 acf(residuals(life.lm),ci=0.99)
+acf(residuals(life.lm),ci=0.95)
 ```
+La fonction ACF indique si la valeur actuelle dépend toujours des valeurs précédentes (les décalages = lag).
 
-
-L'hypothèse d'indépendance est cohérente graphiquement, au seuil 0.99. Nous avons choisi ici d'être peu restrictifs sur l'autocorrélation en prenant un intervalle de con ance de niveau 0.99, mais elle ne serait pas valide avec une con ance de 0.95.
+L'hypothèse d'indépendance est cohérente graphiquement, au seuil 0.99. Nous avons choisi ici d'être peu restrictifs sur l'autocorrélation en prenant un intervalle de confiance de niveau 0.99, mais elle ne serait pas valide avec une confiance de 0.95.
 
 **Avec des tests statistiques**
+
+-> *Shapiro test* : test de la normalité des résidus.
 
 ```{r}
 shapiro.test(resid(life.lm))
 ```
 On obtient une p-valeur de 10.4%. On ne rejette pas l'hypothèse de normalité avec un seuil de 5%.
-On teste l'hypothèse de linéarité :
+
+-> *Rainbow test* : test de la linéarité du modèle.
 
 ```{r}
 library(lmtest)
@@ -371,17 +438,21 @@ raintest(life.lm)
 ```
 On obtient une p-valeur de 32.98%. On ne rejette pas le modèle linéaire. On teste ensuite l'hypothèse d'homogénéité des variances :
 
+-> *Goldfeld-Quandt test* : test de l'homoscedasticité.
+
 ```{r}
 gqtest(life.lm)
 ```
 On obtient une p-valeur de 75.62%. L'homogénéité de la variance des résidus n'est pas rejetée.
-On teste également l'indépendance des résidus :
+
+-> *Durbin-Watson test* : test de l'indépendance des résidus.
+
 
 ```{r}
 dwtest(life.lm)
 ```
 
-On obtient une p-valeur de 23.23%. L'indépendance des résidus n'est pas rejetée (Attention, le test de Durbin Wastson teste l'autocorrélation d'ordre 1 et d'autres tests peuvent être plus adaptés   test de Box-Pierce par exemple).
+On obtient une p-valeur de 23.23%. L'indépendance des résidus n'est pas rejetée (Attention, le test de Durbin Wastson teste l'autocorrélation d'ordre 1 et d'autres tests peuvent être plus adaptés,le test de Box-Pierce par exemple).
 Nous vérifions enfin qu'il n'y a pas de colinéarité forte dans le modèle, c'est-à-dire que les variables explicatives ne sont pas linéairement dépendantes.
 
 ```{r}
@@ -398,7 +469,11 @@ Les valeurs des VIF (Variance Inflation Factors) étant inférieures à 10, les 
 
 On se pose la question de l’effet des variables $X$ :
 
-$\mathcal{H}_0 : {\beta_1 = ... = \beta_p = 0}$ contre $\mathcal{H}_1 : \exists$ au moins un $j$ tel que ${\beta_j \neq 0}$ où $j$ varie de $1$ à $p$.
+$\mathcal{H}_0 : {\beta_1 = ... = \beta_p = 0}$
+
+contre 
+
+$\mathcal{H}_1 : \exists$ au moins un $j$ tel que ${\beta_j \neq 0}$ où $j$ varie de $1$ à $p$.
 
 *Remarque*: Si l'hypothèse nulle est vérifiée, alors $y_i = \beta_0 + \epsilon_i$
 
@@ -451,7 +526,7 @@ summary(life.lm)
 Pour lire la p valeur du test de Fisher et celles des tests de Student, il faut s’assurer auparavant que les résidus suivent une loi normale. Pour cela, vous allez réaliser un test de normalité, celui de Shapiro-Wilk avec R.
 
 
-La p-valeur (p-value = .634e-12 ) du test de Fisher étant inférieure ou égale à  $\alpha = 5\%$, le test est significatif. Nous rejetons H0 et nous décidons que H1 est vraie avec un risque de première espèce  $\alpha = 5\%$. Donc il y a au moins une des deux variables qui joue le rôle de variable explicative.
+La p-valeur (p-value = 1.634e-12 ) du test de Fisher étant inférieure ou égale à  $\alpha = 5\%$, le test est significatif. Nous rejetons $\mathcal{H}_0$ et nous décidons que $\mathcal{H}_1$ est vraie avec un risque de première espèce  $\alpha = 5\%$. Donc il y a au moins une des deux variables qui joue le rôle de variable explicative.
 
 
 ---
@@ -471,9 +546,9 @@ $\mathcal{H}_0 : {\beta_j = 0}$ contre $\mathcal{H}_1 : {\beta_j \neq 0}$ pour $
 
 **Décision et conclusion du test**: La valeur critique du test, notée $c_\alpha$ est lue dans une table de la loi de Student.
 
-- Si la valeur absolue de la valeur de la statistique calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs)$ est supérieure ou égale à $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d’erreur de première espèce $\alpha$.
+- Si la valeur absolue de la valeur de la statistique calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_j,n-2}(obs)$ est supérieure ou égale à $c_\alpha$, alors le test est significatif. Vous rejetez  $\mathcal{H}_0$ et vous décidez que $\mathcal{H}_1$ est vraie avec un risque d’erreur de première espèce $\alpha$.
 
-- Si la valeur absolue de la valeur de la statistique calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_1,n-2}(obs)$ est strictement inférieure à $c_\alpha$, alors le test n’est pas significatif. Vous conservez $\mathcal{H}_0$ avec un risque d’erreur de deuxième espèce $\beta$ à évaluer. 
+- Si la valeur absolue de la valeur de la statistique calculée sur l’echantillon, notée $\mathcal{T}_{\widehat\beta_j,n-2}(obs)$ est strictement inférieure à $c_\alpha$, alors le test n’est pas significatif. Vous conservez $\mathcal{H}_0$ avec un risque d’erreur de deuxième espèce $\beta$ à évaluer. 
 
 ---
 
@@ -536,9 +611,9 @@ ci
 
   -- Critère du $R^2$ 
   
-  -- Critètre d’information d’Akaike (AIC)
+  -- Critère d’information d’Akaike (AIC)
   
-  -- Critètre d’information bayesien (BIC)
+  -- Critère d’information bayesien (BIC)
 
 - Procédure de sélection de variable
 
@@ -623,20 +698,23 @@ Si nous souhaitons minimiser le critère AIC, nous pouvons l'obtenir de la faço
 ```{r}
 life.lm <- lm(Life.Exp ~ ., data=stateEU) 
 summary(life.lm)
+extractAIC(life.lm)
 ```
 
-(On préférera extractAIC à la fonction AIC qui donne un critère légèrement di érent.) On commence par enlever les variables dont la p-valeur est supérieure à 0.3.
+(On préférera extractAIC à la fonction AIC qui donne un critère légèrement différent.) On commence par enlever les variables dont la p-valeur est supérieure à 0.3.
 
 ```{r}
 life.lm <-  update(life.lm,.~.-Area-Illiteracy-Income)
 summary(life.lm)
+extractAIC(life.lm)
 ```
 On constate que l'AIC a bien diminué.
-On enlève ensuite la variable dont le coe cient est le moins signi catif, ici Population.
+On enlève ensuite la variable dont le coefficient est le moins significatif, ici Population.
 
 ```{r}
 life.lm <-  update(life.lm,.~.-Population)
 summary(life.lm)
+extractAIC(life.lm)
 ```
 
 On constate que l'AIC a augmenté (et que l'écart-type estimé des résidus a augmenté : il vaut 0.7427 contre 0.7197 auparavant). On préfère donc le modèle conservant la variable Population.
@@ -650,7 +728,7 @@ R peut faire ce raisonnement de manière automatisée. Il suffit d'appliquer
 life.lm <- step(lm(Life.Exp ~ .,data=stateEU), method="bakward")
 ```
 
-Le critère choisi par défaut est alors l'AIC. Il est également possible de choisir les méthodes "forward" et "both". Ensuite on peut résumer les di érentes étapes de la façon suivante :
+Le critère choisi par défaut est alors l'AIC. Il est également possible de choisir les méthodes "forward" et "both". Ensuite on peut résumer les différentes étapes de la façon suivante :
 
 ```{r}
 life.lm$anova
