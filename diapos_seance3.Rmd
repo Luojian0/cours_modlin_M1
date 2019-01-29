@@ -8,7 +8,9 @@ output: slidy_presentation
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE, width = 75)
-knitr::opts_chunk$set(echo = TRUE, fig.align='center', dev='png', dpi = 95, out.width = "100%")
+knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.heigh=5, fig.align='center', dev='png', dpi = 95,
+echo=FALSE, results="hide")
+
 ```
 
 ---
@@ -49,13 +51,13 @@ Séance 8 - 3h (14/03) Ancova
 
 ---
 
-# Plan séance 2
-## Régression linéaire multiple
+# Plan séance 3
+## ANOVA
 
 
 I) Introduction et rappels
 II) Présentation du modèle
-III) Tableau de l'analyse de la variance
+III) Tableau de l‘analyse de la variance
 IV) Vérification des trois conditions
 V) Comparaisons multiples
 
@@ -67,22 +69,30 @@ V) Comparaisons multiples
 
 **Objectif de la regression linéaire simple**: considérons $x$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variable explicative $x$. 
 
-Modèle : $$E(Y)  = f(x) = \beta_0 + \beta_1 x$$
+Modèle : $$\widehat{Y} = E(Y)  = f(x) = \beta_0 + \beta_1 x$$
 
-*la méthode des moindres carrés ordinaires (MCO)*: 
+la méthode des *moindres carrés ordinaires (MCO)* minimise l‘*erreur quadratique moyenne* (EQM, la somme du carré des résidus).
 
-$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - \widehat\beta_0 -  \widehat\beta_1x_i)^2$$
+$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - f(x_i))^2$$
 
-Soit 
+La variance totale se décompose en la somme de la variance expliquée (par la regression) et la variance résiduelle.
+
 $$ \sum(Y_i - \overline{Y}_n)^2 = \sum(\widehat{Y}_i - \overline{Y}_n)^2 + \sum(Y_i - \widehat{Y}_i)^2 $$
+
+avec $Y_i$ la *i*-éme valeur observé pour $i=1,...,n$, $\widehat{Y}_i = f(x_i)$ la valeur estimée par le modèle pour $i=1,...,n$ et $\overline{Y}_n$  la moyenne empirique des $n$ observations.
+
 $$ SC_{tot} = SC_{reg} + SC_{res}$$ 
 
-avec $\widehat{Y}_i$ la valeur estimée par le modèle  pour $i=1,...,n$ et $\overline{Y}_n$  la moyenne empirique des observations sur $n$.
+Avec $SC_{tot}$ la somme des carrés totale,  $SC_{reg}$ la somme des carrés due à la régression et  $SC_{res}$ la somme des carrés des résidus.
+
+Le coefficient de determination $R^2$ mesure du pourcentage de la variance expliquée par le modèle.
+
+$$ R^2 = \frac{SC_{reg}}{SC_{tot}}$$
+
 
 ```{r}
 d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
-d$sex = as.factor(d$sex)
-layout(1, respect=TRUE)
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
 plot(d$taille, d$poids, main="poids~taille")
 ## Model
 # Y~X
@@ -90,12 +100,30 @@ plot(d$taille, d$poids, main="poids~taille")
 # E(Y) = b_0 + b_1.X
 # Y_i = b_0 + b_1.X_i + e_i
 m = lm(d$poids~d$taille)
-m$coefficients
+# m$coefficients
 abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
+abline(h=mean(d$poids), lty=2)
 # residuals
-m$residuals
-suppressWarnings(arrows(d$taille, d$poids, d$taille, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1))
-legend("topleft",c("regression line", "residuals"), col=c(2,4), lty=1, cex=.8)
+# m$residuals
+t = jitter(d$taille)
+suppressWarnings(arrows(t, d$poids, t, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1))
+suppressWarnings(arrows(t, d$poids-m$residuals, t, mean(d$poids), col=adjustcolor(2, alpha.f=0.5), length=0.1))
+legend("topleft",c("regression line", "observations mean", "residuals", "explained variance"), col=c(1,1,4,2), lty=c(1,2,1,1), cex=.8)
+
+```
+
+```{r echo=TRUE, results="verbatim"}
+sc_res = sum(m$residuals^2)
+sc_reg = sum((d$poids-m$residuals - mean(d$poids))^2)
+sc_tot = sum((d$poids - mean(d$poids))^2)
+
+sc_res
+sc_reg
+sc_tot
+
+sc_reg / sc_tot
+
+summary(m)
 ```
 
 ---
@@ -112,54 +140,78 @@ Utiliser les **moindres carrés** revient à minimiser la quantité suivante: $$
 
 ---
  
-## II. Presentation du modèle
+## II. Présentation du modèle
 
-  - La régression linéaire se caractérise par des variables explicatives **continues** ou quantitatives (Ex : poids~taille). L’ANOVA se caractérise par des variables explicatives **discrètes**, catégorielle, ou qualitatives (Ex : poids~sexe).
-  
-  Dans l'anova à un facteur, nous étudions un test statistique permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes gaussiennes et de même variance.
-  
-  L’analyse de la variance est l’une des procédures les plus utilisées dans les applications de la statistique ainsi que dans les méthodes d’analyse de données.
+La régression linéaire se caractérise par des variables explicatives *quantitatives* (Ex : taille). 
+L’analyse de la variance (ANOVA) se caractérise par des variables explicatives *qualitatives* (Ex : sexe).
+
+Dans les deux cas la variable expliquée est *quantitatives* (ex : poids).
+
+L‘ANOVA à un facteur est un test statistique permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes gaussiennes et de même variance.
+
+Ex : le poids moyen de différent groupe d‘individus.
+
+L’analyse de la variance est l’une des procédures les plus utilisées dans les applications de la statistique ainsi que dans les méthodes d’analyse de données.
 
 ---
 
 ## II.  Présentation du modèle
-### Exemple
+### Exemple : InsectSprays
 
-```{r}
+
+Cette base de données comprend le comptage du nombre d‘abeille (count, numeric) par parcelle agricole en fonction de différents type de spray utilisé sur les parcelles (spray, factor).
+
+```{r results="verbatim", echo=TRUE}
 data("InsectSprays")
-attach(InsectSprays)
-DT::datatable(InsectSprays, width = "100%")
+d = InsectSprays
+head(d)
+tail(d)
 ```
 
-Cette base de données comprend le comptage du nombre d'abeille (count numeric) par parcelle agricole en fonction de différents insecticides (spray factor).
+$$Y \sim X$$
 
-La variable mesurée dans un tel schéma expérimental sera notée $Y$ (nombre d'abeille).
+On cherche à expliqué nombre d’abeilles (Y) en fonction du type de spray utilisé (X).
 
-Pour les observations, nous utilisons deux indices.
-
-- Un indice $i$ indiquant le type de spray dans la population 'Insecticide' avec $i=1,...,I$.
-- Un indice $j$ indiquant le numéro de l'observation pour chaque type d'insecticide (réplicat), avec $j=1,...,J(i)$.
-
-Les observations sont notées $Y_{ij}$.
-
-Lorsque les échantillons sont de même taille, nous disons que l’expérience est équilibrée.
 
 ```{r}
-table(InsectSprays$spray)
+layout(matrix(1:3, 1, byrow=TRUE), respect=TRUE)
+p = plot(d$spray, d$count, main="count~spray", las=2)
+m = lm(count ~ spray, d)
+# spray = jitter(as.numeric(d$spray))
+# arrows(spray, d$count, spray, d$count-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
+# legend("topleft","residuals", col=4, lty=1, cex=.8)
 ```
+
+
 
 ---
 
 ## II.  Présentation du modèle
 ### Notations
 
-Moyennes:
+Pour les observations, nous utilisons deux indices : 
 
+- $i$ indifie le *i*-éme type de spray avec $i=1,...,I$.
+- $j$ indifie la *j*-éme observation (réplicat) pour chaque type de spray avec $j=1,...,J(i)$.
+
+Les observations sont notées $Y_{ij}$.
+
+Lorsque les groupes échantillons sont de même taille, nous disons que l’expérience est équilibrée.
+
+```{r results="verbatim", echo=TRUE}
+table(d$spray)
+```
+
+Si l’expérience est équilibrée $J(i) = J , \forall i$.
+
+Les observations sont notées $Y_{ij}$
+
+La moyenne observée du groupe $i$ avec $i = 1,...,I$ est
 $$\overline{Y}_i = \frac{1}{J}\sum^J_{j=1}Y_{ij}$$
-Variances:
 
+La variance observée du groupe $i$ avec $i = 1,...,I$ est
 $$s_i^2(Y) = \frac{1}{J}\sum^J_{j=1}(Y_{ij} -\overline{Y}_i)^2$$
-avec $i = 1,...,I$
+
 
 *Remarque*: Cette dernière formule exprime la variance non corrigée. Très souvent, dans les ouvrages ou les logiciels, c’est la variance corrigée qui est utilisée : au lieu d’être divisée par J, la somme est divisée par J − 1.
 
@@ -168,7 +220,7 @@ avec $i = 1,...,I$
 ## II.  Présentation du modèle
 ### Conditions fondamentales
 
-Les résidus {ebij } sont associés, sans en être des réalisations, aux variables erreurs {"ij } qui sont inobservables et satisfont aux 3 conditions suivantes :
+Les résidus {e_{ij} } sont associés, sans en être des réalisations, aux variables erreurs {"ij } qui sont inobservables et satisfont aux 3 conditions suivantes :
 1. Elles sont indépendantes (independent).
 2. Elles ont même variance  2 inconnue. C’est la condition d’ homogénéité (homogeneity) ou
 d’ homoscédasticité (homoscedasticity).
