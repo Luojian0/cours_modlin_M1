@@ -1,9 +1,10 @@
 ---
-title: "Modèles linéaires"
-subtitle: "Séance 3 - Anova 1 facteur"
+title: "ANOVA à 1 facteur"
+subtitle: "Séance 3 de *modèles linéaires*"
 author: "Florent Chuffart & Magali Richard"
-date: "31 Mars 2019"
+date: "`r Sys.Date()`"
 output: slidy_presentation
+# output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -67,7 +68,9 @@ VI) Comparaisons multiples
 
 ---
 
-# Rappel - regression linéaire simple
+# Rappels regression linéaire
+
+### Regression linéaire simple
 
 **Objectif de la regression linéaire simple** Considérons $x$ et $Y$ deux variables quantitatives. Y est expliquée (modélisée) par  la variable explicative $x$. 
 
@@ -125,12 +128,11 @@ sc_tot
 
 sc_reg / sc_tot
 
+m = lm(d$poids~d$taille)
 summary(m)
 ```
 
----
-
-# Rappel - regression linéaire multiple
+### Regression linéaire multiple
 
 **Objectif de la regression linéaire multiple** Considérons $X_1, ..., X_p$ et $Y$ plusieurs variables quantitatives. Y est expliquée (modélisée) par  les variable explicative $X_1, ..., X_p$. 
 
@@ -160,9 +162,12 @@ Ex : le poids moyen de différent groupe d’individus.
 
 L’analyse de la variance est l’une des procédures les plus utilisées dans les applications de la statistique ainsi que dans les méthodes d’analyse de données.
 
----
 
-# Présentation de l'ANOVA à un facteur - exemple *InsectSprays*
+
+
+
+
+### Exemple *InsectSprays*
 
 Cette base de données comprend le comptage du nombre d’abeilles présentent dans parcelle agricole (*count*, *numeric*) en fonction du type de spray utilisé sur cette parcelles (*spray*, *factor*).
 
@@ -176,56 +181,68 @@ tail(d)
 $$Y \sim X$$
 
 On cherche à expliquer le nombre d’abeilles (Y) en fonction du type de spray (X).
+
 On s’intérroge sur l’effet du type de spray utilisé (X) sur le nombre d’abeilles observé (Y).
 
 
 ```{r, echo=TRUE}
-layout(1, respect=TRUE)
-p = plot(d$spray, d$count, main="count~spray", xlab="spray", ylab="count")
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+p = plot(d$spray, d$count, main="count~spray", xlab="spray", ylab="count", border="grey")
+points(jitter(as.numeric(d$spray)), d$count)
 ```
 
 
----
-
-# Présentation de l'ANOVA à un facteur - modèle statistique
+### L'ANOVA à un facteur, un modèle statistique
 
 $$Y_{ij} = \mu + \beta_i + \epsilon_{ij}$$
 
-où $$\sum_{i=1}^I \beta_i = 0$$ 
 
-et $$L(\epsilon_{ij}) = N(0,\sigma^2), i=1,...,I \text{ et } j=1,...,J$$
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=5, col=2)
+suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
 
-Ainsi $$\mu_i = \mu + \beta_i, i=1,...,I$$
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("top", c("Y_ij", "beta_i", "residuals", "mu"), pch=c(1,5,5,NA), col=c(1,2,4,1), lty=c(0,0,0,2), border=0)
+```
 
----
+où : $$\sum_{i=1}^I \beta_i = 0$$ 
 
-# Présentation de l'ANOVA à un facteur - test de comparaison des moyennes
+Ainsi : $$\mu_i = \mu + \beta_i, i=1,...,I$$
+
+
+Sous certaines hypothèses, l’ANOVA devient un test de comparaison des moyennes des facteurs.
+
+
+
+
+
+
+### L'ANOVA à un facteur, un test de comparaison des moyennes
 
 Nous nous proposons de tester l’hypothèse nulle 
 
-$$(H0) : \mu_1 =\mu_2 =···=\mu_I$$
+$$(H_0) : \mu_1 =\mu_2 =···=\mu_I$$
 
 contre l’hypothèse alternative
 
-$$(H1) : \text{les moyennes } \mu_i \text{ ne sont pas toutes égales}$$
+$$(H_1) : \text{les moyennes } \mu_i \text{ ne sont pas toutes égales}$$
 
 La méthode statistique qui permet d’effectuer ce test est appelée l’analyse de la variance à un facteur (one way analysis of variance).
 
-### Intuition du test
 
-Sous l’hypothèse nulle, l’interval de confiance de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations.
+*Intuition 1* - Sous l’hypothèse nulle, et sous les hypothèses du test, l’interval de confiance (au risque $\alpha$) de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations. Si ce n’est pas le cas on rejette $H_0$ et on accepte $H_1$ au risque $\alpha$. Si c’est le cas on conserve $H_0$ au risque $\beta$ à calculer. 
 
-Si ce n’est pas le cas et sous les hypothèses du test on rejette $H0$ et on accepte $H1$ au risque $\alpha$.
+*Intuition 2* - Si la variable observée pour chaque groupe est normalement distribuée, l’intervalle de confiance à $95\%$ de la moyenne de chaque groupe est très proche de la moyenne de chaque groupe +/- 2 fois l’écart type de chaque groupe. 
 
-Si c’est le cas et sous les hypothèses du test on conserve $H0$ au risque $\beta$ à calculer. 
-
-
-Par exemple, si la variable observée pour chaque groupe est normalement distribuée, l’intervalle de confiance à $95\%$ de la moyenne de chaque groupe est très proche de la moyenne de chaque groupe +/- 2 fois l’écart type de chaque groupe. 
-
-Sous l’hypothèse nulle, l’interval de confiance de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations.
-
-Ici, ce n’est  pas le cas, après vérification des hypothèse du test on pourrait rejetter $H0$ et on accepter $H1$ au risque $\alpha$ de $5\%$.
-
+Ici, ce n’est  pas le cas. Après vérification des hypothèse du test on pourrait tenter de rejetter $H_0$ et accepter $H_1$ au risque $\alpha$ de $5\%$.
 
 
 ```{r results="verbatim",}
@@ -236,112 +253,46 @@ s2_i = sapply(levels(d$spray), function(s) {
  var(d[d$spray==s,]$count)
 })
 s_i = sqrt(s2_i)
-layout(1, respect=TRUE)
-plot(as.numeric(d$spray), d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
-points(y_i, pch=3, col=2)
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
 abline(h=mean(y_i), lty=2)
 sp = 1:length(levels(d$spray))
 suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
 suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
+points(y_i, pch=3, col=2)
 axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
-legend("top", c("observations", "mean per group", "mean +/- 2sd", "global mean"), pch=c(1,3,4,NA), col=c(1,2,4,1), lty=c(0,0,0,2))
+legend("top", c("observations", "means per group", "means +/- 2sd", "global mean"), pch=c(1,3,4,NA), col=c(1,2,4,1), lty=c(0,0,0,2))
 ```
 
----
 
+### Hypothèses du test
 
-# Présentation de l'ANOVA à un facteur - hypothèses du test
 Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations, aux variables erreurs $\epsilon_{ij}$ qui sont inobservables et satisfont aux 3 conditions suivantes :
 
 1. Elles sont indépendantes.
 2. Elles ont même variance $\sigma^2$ inconnue. C’est la condition d’homogénéité des variances ou homoscédasticité
 3. Elles sont de loi gaussienne.
 
+Normalité des residus : $$L(\epsilon_{ij}) = N(0,\sigma^2), i=1,...,I \text{ et } j=1,...,J$$
 
 
 
----
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=3, col=2)
+# suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
 
-
-
-
-
-
-# Tableau de l'analyse de la variance
-### Propriétés fondamentales
-
-Le test est fondé sur deux propriétés des moyennes et des variances.
-
-(1) La moyenne de toutes les observations est la moyenne des moyennes de chaque échantillon. Ceci s’écrit :
-
-(2) La variance de toutes les observations est la somme de la variance des moyennes et de la moyenne des variances. Ceci s’écrit :
-
----
-
-# Tableau de l'analyse de la variance
-### Résultat fondamental
-
-En multipliant les deux membres par n de l’équation (1), nous obtenons :
-
----
-
-# Tableau de l'analyse de la variance
-### Principe du test
-
-Si l’hypothèse nulle (H0) est vraie alors la quantité SCF doit être petite par rapport à la quantité SCR.
-Par contre, si l’hypothèse alternative (H1) est vraie alors la quantité SCF doit être grande par rapport à la quantité SCR.
-Pour comparer ces quantités, R. A. Fisher, après les avoir
-« corrigées » par leurs degrés de liberté (ddl), a considéré leur rapport.
-
----
-
-# Tableau de l'analyse de la variance
-### Définition
-
-Nous appelons carré moyen associé au facteur le terme CMF = SCF
-  I 1 et carré moyen résiduel le terme
-CMR = SCR
-
-Le carré moyen résiduel est un estimateur sans biais de la variance des erreurs  2.
-C’est pourquoi il est souvent également appelé variance résiduelle et presque systématiquement noté SR2 lorsqu’il sert à estimer la variance des erreurs.
-Sa valeur observée sur l’échantillon est ainsi notée cmR ou sR2 .
-
----
-
-# Tableau de l'analyse de la variance
-### Test de l'ANOVA
-
-Si les trois conditions sont satisfaites et si l’hypothèse nulle
-(H0) est vraie alors
-est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à I   1 degrés de liberté au numérateur et n   I degrés de liberté au dénominateur. Cette loi est notée FI 1,n I.
-
-Pour un seuil donné ↵ (=5%=0,05 en général), les tables de Fisher nous fournissent une valeur critique c telle que
-P(H0) [F 6 c] = 1   ↵. Alors nous décidons :
-⇢ siFobs <c (H0)est vraie,
-
-
----
-
-# Tableau de l'analyse de la variance
-### Tableau de l'ANOVA
-
-Tableau de l'analyse de la variance
-
-*** FLO: il faut corriger les formules du tableau
-
-| Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
-| :-------------------- | :-------: | :--: | :--: | ---:
-| Due au facteur            | $sc_{F} = \sum^n_{i=1}(\widehat{y}_i - \overline{y})^2$    | p-1  | $\frac{sc_{reg}}{p-1}$ | $\frac{cm_{reg}}{cm_{res}}$
-| Résiduelle            | $sc_{res} = \sum^n_{i=1}(y_i - \widehat{y})^2$    | n-p  | $\frac{sc_{reg}}{n-p}$ 
-| Totale            | $sc_{tot} = \sum^n_{i=1}(y_i - \overline{y})^2$    | n-1 
-
----
-
-# Tableau de l'analyse de la variance
-### Remarques
-
-Nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble, mais nous aurions très bien pu trouver le contraire.
-Comme nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble que le facteur étudié est à effets fixes et qu’il a plus de trois modalités, nous pourrions essayer de déterminer là où résident les différences avec un des tests de comparaisons multiples détaillés à la Section 4.
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("top", c("observations", "means per group", "residuals"), pch=c(1,3,5), col=c(1,2,4))
+```
 
 
 
@@ -350,13 +301,7 @@ Comme nous avons décidé que les moyennes théoriques sont différentes dans le
 
 
 
-
-
-
-
-
-
-
+Ce test se fonde sur la décomposition de la variance.
 
 
 
@@ -367,7 +312,9 @@ Comme nous avons décidé que les moyennes théoriques sont différentes dans le
 
 ---
 
-# Notations
+# Décomposition de la variance
+
+### Notations
 
 Pour les observations, nous utilisons deux indices : 
 
@@ -419,31 +366,148 @@ s2_i = sapply(levels(d$spray), function(s) {
  var(d[d$spray==s,]$count)
 })
 s_i = sqrt(s2_i)
-layout(matrix(1:3, 1, byrow=TRUE), respect=TRUE)
-plot(as.numeric(d$spray), d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
-points(y_i, pch=3, col=2)
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+points(y_i, pch=4, col=2)
 sp = 1:length(levels(d$spray))
 suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
 suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
 axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
-legend("bottomright", c("Y_ij", "Y_i", "Y_i +/- 2 s_i"), pch=c(1,3,4), col=c(1,2,4))
+legend("bottomright", c("Y_ij", "Y_i", "Y_i +/- 2 s_i"), pch=c(1,4,4), col=c(1,2,4))
+```
+
+### Propriétés fondamentales
+
+Le test est fondé sur deux propriétés des moyennes et des variances.
+
+(1) La moyenne de toutes les observations est la moyenne des moyennes de chaque échantillon. Ceci s’écrit :
+
+$$\overline{y} 
+ = \frac{1}{n} \sum_{j=1}^J \sum_{i=1}^I y_{ij} 
+ = \frac{1}{n} \sum_{i=1}^I \sum_{j=1}^J y_{ij}
+ = \frac{1}{I} \sum_{i=1}^I \overline{y_i} $$
+
+
+(2) La variance de toutes les observations est la somme de la variance des moyennes et de la moyenne des variances. Ceci s’écrit :
+
+$$s^2(y) =  
+ = \frac{1}{n} \sum_{j=1}^J \sum_{i=1}^I (y_{ij} - \overline{y})^2 
+ = \frac{1}{I} \sum_{i=1}^I (\overline{y_i} - \overline{y})^2 + \frac{1}{I}\sum_{i=1}^I s_i^2(y) $$
+
+On conserve la proriété vu dans la regression linéaire
+ 
+$$ SC_{tot} = SC_{F} + SC_{res}$$ 
+
+Avec $SC_{tot}$ la somme des carrés totale,  $SC_{F}$ la somme des carrés des facteurs et  $SC_{res}$ la somme des carrés des résidus.
+
+
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=5, col=2)
+suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
+
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("bottomright", c("Y_ij", "Y_i", "residuals"), pch=c(1,5,5), col=c(1,2,4))
+```
+
+Le coefficient de determination $R^2$ mesure du pourcentage de la variance expliquée par le modèle.
+
+$$ R^2 = \frac{SC_{F}}{SC_{tot}}$$
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(d$count~d$spray)
+summary(m)
 ```
 
 
+https://github.com/fchuffar/tp_data_co2
+
 ---
 
+# Test de l'ANOVA
+
+*Intuition* - Si l’hypothèse nulle $H_0$ est vraie alors la quantité $SC_F$ doit être petite par rapport à la quantité $SC_{res}$.
+Par contre, si l’hypothèse alternative $H_1$ est vraie alors la quantité $SC_F$ doit être grande par rapport à la quantité $SC_{res}$.
+
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=5, col=2)
+suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
+
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("bottomright", c("Y_ij", "SC_F", "SC_res"), pch=c(1,5,5), col=c(1,2,4))
+```
+
+Pour comparer ces quantités, R. A. Fisher, après les avoir
+"corrigées" par leurs degrés de liberté (ddl), a considéré leur rapport.
+
+Nous appelons *carré moyen associé au facteur* le terme 
+
+$$CM_F = \frac{SC_F}{I-i}$$
+
+et *carré moyen résiduel* le terme :
+
+$$CM_{res} = \frac{SC_{res}}{n-I}$$
+
+Le carré moyen résiduel est un estimateur sans biais de la variance des erreurs  $\sigma^2$.
+C’est pourquoi il est souvent également appelé variance résiduelle et presque systématiquement noté $S_{res}^2$ lorsqu’il sert à estimer la variance des erreurs.
+Sa valeur observée sur l’échantillon est ainsi notée $cm_{res}$ ou $s_{res}^2$ .
+
+
+Si les trois conditions sont satisfaites et si l’hypothèse nulle
+$H_0$ est vraie alors
+
+$$ F_{obs} = \frac{cm_F}{cm_{res}}$$
+
+est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à $I-1$ degrés de liberté au numérateur et $n-I$ degrés de liberté au dénominateur. Cette loi est notée  $\mathcal{F}_{I-1,n-I}$.
+
+### Tableau de l’analyse de la variance 
+
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(d$count~d$spray)
+anova(m)
+```
+
+| Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
+| :-------------------- | :-------: | :--: | :--: | ---:
+| Due au facteur        | $sc_{F}$  | $I-1$  | $cm_{F}=\frac{sc_{F}}{I-1}$ | $\frac{cm_{F}}{cm_{res}}$
+| Résiduelle            | $sc_{res}$| $n-I$  | $cm_{res}=\frac{sc_{res}}{n-I}$ 
+| Totale                | $sc_{tot}$| $n-1$ 
 
 
 
-# Hypothèses du test - indépendance
+
+
+
+
+
+
+
+### Hypothèses du test
+
+#### Indépendance
 
 
 Il n’existe pas, dans un contexte général, de test statistique simple permettant d’étudier l’indépendance.
 Ce sont les conditions de l’expérience qui nous permettront d’affirmer que nous sommes dans le cas de l’indépendance.
 
----
-
-# Hypothèses du test - normalité
+#### Normalité
 
 
 Remarquons que si les conditions sont satisfaites et si nous notons :
@@ -458,22 +522,22 @@ estimateurs de la moyenne : les $Y_i$ où ils sont définis par
 
 Nous pouvons alors tester la normalité, avec le test de Shapiro-Wilk ou avec le test de Shapiro-Francia sur l’ensemble des résidus.
 
----
 
-# Hypothèses du test - homogénéité des variances
+#### Homogénéité des variances
 
-Plusieurs tests permettent de tester l’égalité de plusieurs variances. Parmi ceux-ci, le test le plus utilisé est le test de Bartlett dont le protocole est le suivant.
+Plusieurs tests permettent de tester l’égalité de plusieurs variances. Parmi ceux-ci, un test souvent utilisé est le test de Bartlett dont le protocole est le suivant.
 
 L’hypothèse nulle
 
-$$(H0): \sigma_1^2 = \sigma_2^2 = ...= \sigma_I^2 $$
+$$(H_0) : \sigma_1^2 = \sigma_2^2 = ...= \sigma_I^2$$
 
- contre l’hypothèse alternative
+contre l’hypothèse alternative
 
-$$(H1) : \text{Les variances } \sigma_i_2 \text{ ne sont pas toutes égales.}
+$$(H_1) : \text{Les variances } \sigma_i^2 \text{ ne sont pas toutes égales.}$$
 
 
 En pratique, nous pouvons l’appliquer lorsque les effectifs ni des $I$ échantillons sont tous au moins égaux à 3.
+
 Ce test requiert la normalité des erreurs.
 
 Note : nous avons également testé l’homoscedasticité avec *Goldfeld-Quandt* dans le cadre du premier TP et lors de la seconde séance.
@@ -482,13 +546,20 @@ Note : nous avons également testé l’homoscedasticité avec *Goldfeld-Quandt*
 
 # Comparaisons multiples
 
-Lorsque pour la comparaison des moyennes théoriques la décision est « l’hypothèse alternative (H1) est vraie », pour analyser les différences nous procédons à des tests qui vont répondre à la question suivante :
-D’où vient la différence ?
-Quelles moyennes sont différentes ?
+
+Lorsque que nous rejettons $H_0$, nous pouvons chercher à analyser les différences entre les groupes. Nous procédons alors à des tests qui vont répondre à la question suivante : D’où vient la différence ? Quelles moyennes sont différentes ?
+
 Ces tests qui vont répondre à cette question sont les tests de comparaisons multiples, des adaptations du test de Student.
 
+La plus connues est la correction de *Bonferroni*. Cela consiste à diviser le seuil par le nombre de comparaisons. Bonferroni a montré que cette procédure garantit un taux d’erreur global plus faible que le seuil initial.  
 
-La plus connues est la Correction de *Bonferroni*. Cela consiste à diviser le seuil par le nombre de comparaisons. Bonferroni a montré que cette procédure garantit un taux d’erreur global plus faible que le seuil initial.  
+Dans notre exemple, nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble, mais nous aurions très bien pu trouver le contraire.
+Comme nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble que le facteur étudié est à effets fixes et qu’il a plus de trois modalités, nous pourrions essayer de déterminer là où résident les différences avec un des tests de comparaisons multiples.
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(d$count~d$spray)
+summary(m)
+```
 
 ---
 
