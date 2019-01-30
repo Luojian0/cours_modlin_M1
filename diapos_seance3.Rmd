@@ -3,7 +3,9 @@ title: "ANOVA à 1 facteur"
 subtitle: "Séance 3 de *modèles linéaires*"
 author: "Florent Chuffart & Magali Richard"
 date: "`r Sys.Date()`"
-output: slidy_presentation
+output: 
+  slidy_presentation:
+
 # output: html_document
 ---
 
@@ -56,15 +58,13 @@ Séance 8 - 3h (14/03) Ancova
 
 # Plan
 
-## ANOVA
+### ANOVA à 1 facteur
 
-I) Rappel  modèles de regression linéaire
-II) Présentation du modèle ANOVA
-III) Test de comparaison des moyennes
-IV) Tableau de l’analyse de la variance
-V) Hypothèses du test
-VI) Comparaisons multiples
-
+1. Rappels regression linéaire
+2. Présentation de l’ANOVA à un facteur
+3. Décomposition de la variance
+4. Test de l’ANOVA
+5. Comparaisons multiples
 
 ---
 
