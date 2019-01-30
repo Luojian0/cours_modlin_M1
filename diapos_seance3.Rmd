@@ -1,5 +1,5 @@
 ---
-title: "Modèle linéaire"
+title: "Modèles linéaires"
 subtitle: "Séance 3 - Anova 1 facteur"
 author: "Florent Chuffart & Magali Richard"
 date: "31 Mars 2019"
@@ -15,23 +15,24 @@ echo=FALSE, results="hide")
 
 ---
 
-## Evaluation
-
- - individuelle sur un jeu de données aprés 4 séances de cours 
- - data challenge à la fin des séances
+# Organisation
 
 ## Pré-requis
  
  - R https://cran.r-project.org 
  - RStudio https://www.rstudio.com
 
-## Cours 
+## Evaluation
 
-- https://github.com/magrichard/cours_modlin_M1
+ - individuelle sur un jeu de données aprés 4 séances de cours 
+ - data challenge à la fin des séances
 
----
+## Supports
 
-# Organisation prévisionnelle
+ - https://github.com/magrichard/cours_modlin_M1
+
+
+## Découpage prévisionnelle
 
 Séance 1 - 3h (10/01) Régression linéaire simple
 
@@ -49,29 +50,30 @@ Séance 7 - 3h (11/03) Anova facteurs emboités
 
 Séance 8 - 3h (14/03) Ancova
 
+
 ---
 
-# Plan séance 3
+# Plan
+
 ## ANOVA
 
-
-I) Introduction et rappels
-II) Présentation du modèle
-III) Tableau de l‘analyse de la variance
-IV) Vérification des trois conditions
-V) Comparaisons multiples
+I) Rappel  modèles de regression linéaire
+II) Présentation du modèle ANOVA
+III) Test de comparaison des moyennes
+IV) Tableau de l’analyse de la variance
+V) Hypothèses du test
+VI) Comparaisons multiples
 
 
 ---
 
-## I.  Introduction
-### Rappels regression linéaire simple
+# Rappel - regression linéaire simple
 
-**Objectif de la regression linéaire simple**: considérons $x$ et $Y$ deux variables. Y est expliquée (modélisée) par  la variable explicative $x$. 
+**Objectif de la regression linéaire simple** Considérons $x$ et $Y$ deux variables quantitatives. Y est expliquée (modélisée) par  la variable explicative $x$. 
 
 Modèle : $$\widehat{Y} = E(Y)  = f(x) = \beta_0 + \beta_1 x$$
 
-la méthode des *moindres carrés ordinaires (MCO)* minimise l‘*erreur quadratique moyenne* (EQM, la somme du carré des résidus).
+la méthode des *moindres carrés ordinaires (MCO)* minimise l’*erreur quadratique moyenne* (EQM, la somme du carré des résidus).
 
 $$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - f(x_i))^2$$
 
@@ -128,38 +130,41 @@ summary(m)
 
 ---
 
-## I.  Introduction
-### Rappels regression linéaire multiple
+# Rappel - regression linéaire multiple
 
-**Objectif de la regression linéaire multiple**: chercher une relation entre la variable observée $Y$ et plusieurs variables explicative $X_1, ..., X_p$. 
+**Objectif de la regression linéaire multiple** Considérons $X_1, ..., X_p$ et $Y$ plusieurs variables quantitatives. Y est expliquée (modélisée) par  les variable explicative $X_1, ..., X_p$. 
 
-On applique alors le modèle linéaire suivant:
+Modèle : 
 
-$$Y  = \beta_0 + \beta_1X_1 + ... + \beta_pX_p + \epsilon  $$
-Utiliser les **moindres carrés** revient à minimiser la quantité suivante: $$min_{\beta_0, ...,\beta_p}\sum^n_{i=1}\Big(y_i -(\beta_0+ \beta_1X_1 + ... + \beta_pX_p)\Big)^2$$
+$$\widehat{Y}  = \beta_0 + \beta_1X_1 + ... + \beta_pX_p + \epsilon  $$
+
+
+Utiliser les **moindres carrés** revient à minimiser la quantité suivante: 
+
+$$min_{\beta_0, ...,\beta_p}\sum^n_{i=1}\Big(y_i -(\beta_0+ \beta_1X_1 + ... + \beta_pX_p)\Big)^2$$
 
 ---
  
-## II. Présentation du modèle
+# Présentation de l'ANOVA à un facteur
 
-La régression linéaire se caractérise par des variables explicatives *quantitatives* (Ex : taille). 
-L’analyse de la variance (ANOVA) se caractérise par des variables explicatives *qualitatives* (Ex : sexe).
+$$Y \sim X$$
 
-Dans les deux cas la variable expliquée est *quantitatives* (ex : poids).
+*X* - La régression linéaire se caractérise par des variables explicatives **quantitatives** (Ex : taille). 
+L’analyse de la variance (ANOVA) se caractérise par des variables explicatives **qualitatives** (Ex : sexe).
 
-L‘ANOVA à un facteur est un test statistique permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes gaussiennes et de même variance.
+*Y* - Dans les deux cas la variable expliquée est quantitatives (ex : poids).
 
-Ex : le poids moyen de différent groupe d‘individus.
+L’**ANOVA** à un facteur est un **test statistique** permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes gaussiennes et de même variance.
+
+Ex : le poids moyen de différent groupe d’individus.
 
 L’analyse de la variance est l’une des procédures les plus utilisées dans les applications de la statistique ainsi que dans les méthodes d’analyse de données.
 
 ---
 
-## II.  Présentation du modèle
-### Exemple : InsectSprays
+# Présentation de l'ANOVA à un facteur - exemple *InsectSprays*
 
-
-Cette base de données comprend le comptage du nombre d‘abeille (count, numeric) par parcelle agricole en fonction de différents type de spray utilisé sur les parcelles (spray, factor).
+Cette base de données comprend le comptage du nombre d’abeilles présentent dans parcelle agricole (*count*, *numeric*) en fonction du type de spray utilisé sur cette parcelles (*spray*, *factor*).
 
 ```{r results="verbatim", echo=TRUE}
 data("InsectSprays")
@@ -170,24 +175,199 @@ tail(d)
 
 $$Y \sim X$$
 
-On cherche à expliqué nombre d’abeilles (Y) en fonction du type de spray utilisé (X).
+On cherche à expliquer le nombre d’abeilles (Y) en fonction du type de spray (X).
+On s’intérroge sur l’effet du type de spray utilisé (X) sur le nombre d’abeilles observé (Y).
 
 
-```{r}
-layout(matrix(1:3, 1, byrow=TRUE), respect=TRUE)
-p = plot(d$spray, d$count, main="count~spray", las=2)
-m = lm(count ~ spray, d)
-# spray = jitter(as.numeric(d$spray))
-# arrows(spray, d$count, spray, d$count-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1)
-# legend("topleft","residuals", col=4, lty=1, cex=.8)
+```{r, echo=TRUE}
+layout(1, respect=TRUE)
+p = plot(d$spray, d$count, main="count~spray", xlab="spray", ylab="count")
 ```
+
+
+---
+
+# Présentation de l'ANOVA à un facteur - modèle statistique
+
+$$Y_{ij} = \mu + \beta_i + \epsilon_{ij}$$
+
+où $$\sum_{i=1}^I \beta_i = 0$$ 
+
+et $$L(\epsilon_{ij}) = N(0,\sigma^2), i=1,...,I \text{ et } j=1,...,J$$
+
+Ainsi $$\mu_i = \mu + \beta_i, i=1,...,I$$
+
+---
+
+# Présentation de l'ANOVA à un facteur - test de comparaison des moyennes
+
+Nous nous proposons de tester l’hypothèse nulle 
+
+$$(H0) : \mu_1 =\mu_2 =···=\mu_I$$
+
+contre l’hypothèse alternative
+
+$$(H1) : \text{les moyennes } \mu_i \text{ ne sont pas toutes égales}$$
+
+La méthode statistique qui permet d’effectuer ce test est appelée l’analyse de la variance à un facteur (one way analysis of variance).
+
+### Intuition du test
+
+Sous l’hypothèse nulle, l’interval de confiance de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations.
+
+Si ce n’est pas le cas et sous les hypothèses du test on rejette $H0$ et on accepte $H1$ au risque $\alpha$.
+
+Si c’est le cas et sous les hypothèses du test on conserve $H0$ au risque $\beta$ à calculer. 
+
+
+Par exemple, si la variable observée pour chaque groupe est normalement distribuée, l’intervalle de confiance à $95\%$ de la moyenne de chaque groupe est très proche de la moyenne de chaque groupe +/- 2 fois l’écart type de chaque groupe. 
+
+Sous l’hypothèse nulle, l’interval de confiance de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations.
+
+Ici, ce n’est  pas le cas, après vérification des hypothèse du test on pourrait rejetter $H0$ et on accepter $H1$ au risque $\alpha$ de $5\%$.
+
+
+
+```{r results="verbatim",}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+s2_i = sapply(levels(d$spray), function(s) {
+ var(d[d$spray==s,]$count)
+})
+s_i = sqrt(s2_i)
+layout(1, respect=TRUE)
+plot(as.numeric(d$spray), d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+points(y_i, pch=3, col=2)
+abline(h=mean(y_i), lty=2)
+sp = 1:length(levels(d$spray))
+suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
+suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("top", c("observations", "mean per group", "mean +/- 2sd", "global mean"), pch=c(1,3,4,NA), col=c(1,2,4,1), lty=c(0,0,0,2))
+```
+
+---
+
+
+# Présentation de l'ANOVA à un facteur - hypothèses du test
+Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations, aux variables erreurs $\epsilon_{ij}$ qui sont inobservables et satisfont aux 3 conditions suivantes :
+
+1. Elles sont indépendantes.
+2. Elles ont même variance $\sigma^2$ inconnue. C’est la condition d’homogénéité des variances ou homoscédasticité
+3. Elles sont de loi gaussienne.
+
 
 
 
 ---
 
-## II.  Présentation du modèle
-### Notations
+
+
+
+
+
+# Tableau de l'analyse de la variance
+### Propriétés fondamentales
+
+Le test est fondé sur deux propriétés des moyennes et des variances.
+
+(1) La moyenne de toutes les observations est la moyenne des moyennes de chaque échantillon. Ceci s’écrit :
+
+(2) La variance de toutes les observations est la somme de la variance des moyennes et de la moyenne des variances. Ceci s’écrit :
+
+---
+
+# Tableau de l'analyse de la variance
+### Résultat fondamental
+
+En multipliant les deux membres par n de l’équation (1), nous obtenons :
+
+---
+
+# Tableau de l'analyse de la variance
+### Principe du test
+
+Si l’hypothèse nulle (H0) est vraie alors la quantité SCF doit être petite par rapport à la quantité SCR.
+Par contre, si l’hypothèse alternative (H1) est vraie alors la quantité SCF doit être grande par rapport à la quantité SCR.
+Pour comparer ces quantités, R. A. Fisher, après les avoir
+« corrigées » par leurs degrés de liberté (ddl), a considéré leur rapport.
+
+---
+
+# Tableau de l'analyse de la variance
+### Définition
+
+Nous appelons carré moyen associé au facteur le terme CMF = SCF
+  I 1 et carré moyen résiduel le terme
+CMR = SCR
+
+Le carré moyen résiduel est un estimateur sans biais de la variance des erreurs  2.
+C’est pourquoi il est souvent également appelé variance résiduelle et presque systématiquement noté SR2 lorsqu’il sert à estimer la variance des erreurs.
+Sa valeur observée sur l’échantillon est ainsi notée cmR ou sR2 .
+
+---
+
+# Tableau de l'analyse de la variance
+### Test de l'ANOVA
+
+Si les trois conditions sont satisfaites et si l’hypothèse nulle
+(H0) est vraie alors
+est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à I   1 degrés de liberté au numérateur et n   I degrés de liberté au dénominateur. Cette loi est notée FI 1,n I.
+
+Pour un seuil donné ↵ (=5%=0,05 en général), les tables de Fisher nous fournissent une valeur critique c telle que
+P(H0) [F 6 c] = 1   ↵. Alors nous décidons :
+⇢ siFobs <c (H0)est vraie,
+
+
+---
+
+# Tableau de l'analyse de la variance
+### Tableau de l'ANOVA
+
+Tableau de l'analyse de la variance
+
+*** FLO: il faut corriger les formules du tableau
+
+| Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
+| :-------------------- | :-------: | :--: | :--: | ---:
+| Due au facteur            | $sc_{F} = \sum^n_{i=1}(\widehat{y}_i - \overline{y})^2$    | p-1  | $\frac{sc_{reg}}{p-1}$ | $\frac{cm_{reg}}{cm_{res}}$
+| Résiduelle            | $sc_{res} = \sum^n_{i=1}(y_i - \widehat{y})^2$    | n-p  | $\frac{sc_{reg}}{n-p}$ 
+| Totale            | $sc_{tot} = \sum^n_{i=1}(y_i - \overline{y})^2$    | n-1 
+
+---
+
+# Tableau de l'analyse de la variance
+### Remarques
+
+Nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble, mais nous aurions très bien pu trouver le contraire.
+Comme nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble que le facteur étudié est à effets fixes et qu’il a plus de trois modalités, nous pourrions essayer de déterminer là où résident les différences avec un des tests de comparaisons multiples détaillés à la Section 4.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+# Notations
 
 Pour les observations, nous utilisons deux indices : 
 
@@ -204,228 +384,117 @@ table(d$spray)
 
 Si l’expérience est équilibrée $J(i) = J , \forall i$.
 
-Les observations sont notées $Y_{ij}$
+Ainsi, les observations sont notées $Y_{ij}$
 
-La moyenne observée du groupe $i$ avec $i = 1,...,I$ est
+La moyenne observée du groupe $i$ avec $i = 1,...,I$ s’écrit : 
 $$\overline{Y}_i = \frac{1}{J}\sum^J_{j=1}Y_{ij}$$
 
-La variance observée du groupe $i$ avec $i = 1,...,I$ est
+La variance observée du groupe $i$ avec $i = 1,...,I$ s’écrit : 
 $$s_i^2(Y) = \frac{1}{J}\sum^J_{j=1}(Y_{ij} -\overline{Y}_i)^2$$
 
 
-*Remarque*: Cette dernière formule exprime la variance non corrigée. Très souvent, dans les ouvrages ou les logiciels, c’est la variance corrigée qui est utilisée : au lieu d’être divisée par J, la somme est divisée par J − 1.
+*Remarque* : Cette dernière formule exprime la variance non corrigée. Très souvent, dans les ouvrages ou les logiciels, c’est la variance corrigée qui est utilisée : au lieu d’être divisée par J, la somme est divisée par J − 1.
 
----
+Dans notre exemple, la moyenne, la variance et l’écart type de chaque groupe sont : 
 
-## II.  Présentation du modèle
-### Conditions fondamentales
+```{r results="verbatim"}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+s2_i = sapply(levels(d$spray), function(s) {
+ var(d[d$spray==s,]$count)
+})
+s_i = sqrt(s2_i)
+print(y_i)
+print(s2_i)
+print(s_i)
+```
 
-Les résidus {e_{ij} } sont associés, sans en être des réalisations, aux variables erreurs {"ij } qui sont inobservables et satisfont aux 3 conditions suivantes :
-1. Elles sont indépendantes (independent).
-2. Elles ont même variance  2 inconnue. C’est la condition d’ homogénéité (homogeneity) ou
-d’ homoscédasticité (homoscedasticity).
-3. Elles sont de loi gaussienne (normal distribution).
 
-Par conséquent ces trois conditions se transfèrent sur les variables aléatoires {Yij }.
-
----
-
-## II.  Présentation du modèle
-### Modèle statistique
-
- Yij =μ+↵i +"ij XI 2
-où ↵i =0etL("ij)=N(0;  ), i =1,...,I,
-
----
-
-## II.  Présentation du modèle
-### Test de comparaison des moyennes
-
-Nous nous proposons de tester l’hypothèse nulle (H0):μ1 =μ2 =···=μI
-contre l’hypothèse alternative
-(H1) : Les moyennes μi ne sont pas toutes égales.
-La méthode statistique qui permet d’effectuer ce test est appelée l’analyse de la variance à un facteur (one way analysis of variance).
-
----
-
-## III.  Tableau de l'analyse de la variance
-### Propriétés fondamentales
-
-Le test est fondé sur deux propriétés des moyennes et des variances.
-
-(1) La moyenne de toutes les observations est la moyenne des moyennes de chaque échantillon. Ceci s’écrit :
-
-(2) La variance de toutes les observations est la somme de la variance des moyennes et de la moyenne des variances. Ceci s’écrit :
-
----
-
-## III.  Tableau de l'analyse de la variance
-### Résultat fondamental
-
-En multipliant les deux membres par n de l’équation (1), nous obtenons :
-
----
-
-## III.  Tableau de l'analyse de la variance
-### Principe du test
-
-Si l’hypothèse nulle (H0) est vraie alors la quantité SCF doit être petite par rapport à la quantité SCR.
-Par contre, si l’hypothèse alternative (H1) est vraie alors la quantité SCF doit être grande par rapport à la quantité SCR.
-Pour comparer ces quantités, R. A. Fisher, après les avoir
-« corrigées » par leurs degrés de liberté (ddl), a considéré leur rapport.
-
----
-
-## III.  Tableau de l'analyse de la variance
-### Définition
-
-Nous appelons carré moyen associé au facteur le terme CMF = SCF
-  I 1 et carré moyen résiduel le terme
-CMR = SCR
-
-Le carré moyen résiduel est un estimateur sans biais de la variance des erreurs  2.
-C’est pourquoi il est souvent également appelé variance résiduelle et presque systématiquement noté SR2 lorsqu’il sert à estimer la variance des erreurs.
-Sa valeur observée sur l’échantillon est ainsi notée cmR ou sR2 .
-
----
-
-## III.  Tableau de l'analyse de la variance
-### Test de l'ANOVA
-
-Si les trois conditions sont satisfaites et si l’hypothèse nulle
-(H0) est vraie alors
-est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à I   1 degrés de liberté au numérateur et n   I degrés de liberté au dénominateur. Cette loi est notée FI 1,n I.
-
-Pour un seuil donné ↵ (=5%=0,05 en général), les tables de Fisher nous fournissent une valeur critique c telle que
-P(H0) [F 6 c] = 1   ↵. Alors nous décidons :
-⇢ siFobs <c (H0)est vraie,
+```{r results="verbatim",}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+s2_i = sapply(levels(d$spray), function(s) {
+ var(d[d$spray==s,]$count)
+})
+s_i = sqrt(s2_i)
+layout(matrix(1:3, 1, byrow=TRUE), respect=TRUE)
+plot(as.numeric(d$spray), d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+points(y_i, pch=3, col=2)
+sp = 1:length(levels(d$spray))
+suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
+suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("bottomright", c("Y_ij", "Y_i", "Y_i +/- 2 s_i"), pch=c(1,3,4), col=c(1,2,4))
+```
 
 
 ---
 
-## III.  Tableau de l'analyse de la variance
-### Tableau de l'ANOVA
 
-Tableau de l'analyse de la variance
 
-*** FLO: il faut corriger les formules du tableau
 
-| Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
-| :-------------------- | :-------: | :--: | :--: | ---:
-| Due au facteur            | $sc_{F} = \sum^n_{i=1}(\widehat{y}_i - \overline{y})^2$    | p-1  | $\frac{sc_{reg}}{p-1}$ | $\frac{cm_{reg}}{cm_{res}}$
-| Résiduelle            | $sc_{res} = \sum^n_{i=1}(y_i - \widehat{y})^2$    | n-p  | $\frac{sc_{reg}}{n-p}$ 
-| Totale            | $sc_{tot} = \sum^n_{i=1}(y_i - \overline{y})^2$    | n-1 
-
----
-
-## III.  Tableau de l'analyse de la variance
-### Remarques
-
-Nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble, mais nous aurions très bien pu trouver le contraire.
-Comme nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble que le facteur étudié est à effets fixes et qu’il a plus de trois modalités, nous pourrions essayer de déterminer là où résident les différences avec un des tests de comparaisons multiples détaillés à la Section 4.
-
----
-
-## IV.  Vérification des trois conditions
-### Indépendance
+# Hypothèses du test - indépendance
 
 
 Il n’existe pas, dans un contexte général, de test statistique simple permettant d’étudier l’indépendance.
 Ce sont les conditions de l’expérience qui nous permettront d’affirmer que nous sommes dans le cas de l’indépendance.
 
-*** FLO: je leur ai présenté ca au dernier cours:
--> *Durbin-Watson test* : test de l'indépendance des résidus.
-
 ---
 
-## IV.  Vérification des trois conditions
-### Normalité
+# Hypothèses du test - normalité
 
 
 Remarquons que si les conditions sont satisfaites et si nous notons :
-Eij =Yij  μi,
+$$\epsilon_{ij} = Y_{ij} - \mu_i$$
  
- alors
 alors c’est la même loi pour l’ensemble des unités.
-L(Eij) = N(0 ;  2),
-Les moyennes μi étant inconnues, nous les estimons par les
-estimateurs de la moyenne : les Y i où ils sont définis par
+$$ L(\epsilon_{ij}) = N(0 ; \sigma_2) $$
+
+Les moyennes $\mu_i$ étant inconnues, nous les estimons par les
+estimateurs de la moyenne : les $Y_i$ où ils sont définis par
 1 XJ
 
 Nous pouvons alors tester la normalité, avec le test de Shapiro-Wilk ou avec le test de Shapiro-Francia sur l’ensemble des résidus.
 
 ---
 
-## IV.  Vérification des trois conditions
-### Homogénéité
+# Hypothèses du test - homogénéité des variances
 
-Plusieurs tests permettent de tester l’égalité de plusieurs variances. Parmi ceux-ci, le test le plus utilisé est le test de Bartlett dont le protocole est le suivant
+Plusieurs tests permettent de tester l’égalité de plusieurs variances. Parmi ceux-ci, le test le plus utilisé est le test de Bartlett dont le protocole est le suivant.
 
 L’hypothèse nulle
-(H0): 12 = 2 =...= I2 contre l’hypothèse alternative
-(H1) : Les variances  i2 ne sont pas toutes égales.
 
-Sous l’hypothèse nulle (H0) le nombre Bobs défini par (3) est la réalisation d’une variable aléatoire B qui suit asymptotiquement une loi du khi-deux à I   1 degrés de liberté.
-En pratique, nous pouvons l’appliquer lorsque les effectifs ni des I échantillons sont tous au moins égaux à 3.
-Ce test requiert la normalité des erreurs.
+$$(H0): \sigma_1^2 = \sigma_2^2 = ...= \sigma_I^2 $$
 
-Pour un seuil donné ↵ (= 5% en général), les tables du khi-deux nous fournissent une valeur critique c telle que P(H0)[B 6 c] = 1   ↵. Alors nous décidons :
-⇢ si c 6 Bobs (H1) est vraie,
+ contre l’hypothèse alternative
 
-*** FLO: je leur ai présenté ca la dernière fois:
--> *Goldfeld-Quandt test* : test de l'homoscedasticité.
+$$(H1) : \text{Les variances } \sigma_i_2 \text{ ne sont pas toutes égales.}
+
+
+En pratique, nous pouvons l’appliquer lorsque les effectifs ni des $I$ échantillons sont tous au moins égaux à 3.
+Ce test requiert la normalité des erreurs.
+
+Note : nous avons également testé l’homoscedasticité avec *Goldfeld-Quandt* dans le cadre du premier TP et lors de la seconde séance.
 
 ---
 
-## V.  Comparaisons multiples
-### Principe
+# Comparaisons multiples
 
 Lorsque pour la comparaison des moyennes théoriques la décision est « l’hypothèse alternative (H1) est vraie », pour analyser les différences nous procédons à des tests qui vont répondre à la question suivante :
 D’où vient la différence ?
 Quelles moyennes sont différentes ?
 Ces tests qui vont répondre à cette question sont les tests de comparaisons multiples, des adaptations du test de Student.
 
----
 
-## V.  Comparaisons multiples
-### Méthodes a priori 
-
-Avant de faire l’expérience, l’expérimentateur connaît la liste des hypothèses qu’il veut tester.
-
-Exemple : montrer que les deux premiers laboratoires sont différents des deux autres.
-
-Méthodes :
-
-- Méthode de Bonferroni,
-- Méthode des contrastes linéaires.
+La plus connues est la Correction de *Bonferroni*. Cela consiste à diviser le seuil par le nombre de comparaisons. Bonferroni a montré que cette procédure garantit un taux d’erreur global plus faible que le seuil initial.  
 
 ---
 
-## V.  Comparaisons multiples
-### Méthodes a posteriori 
+# Notes
 
-Après l’expérience, l’expérimentateur regarde les résultats et oriente ses tests en fonction de ce qu’il observe dans les données.
-
-Exemple : prendre la plus grande et la plus petite moyenne et tester si elles sont vraiment différentes.
-
-Méthodes :
-
-- Méthode basée sur la statistique de rang studentisée
-- Méthodes basées sur la statistique de rang studentisée Méthode de Newman Keuls
-- Méthode de Tukey
-
----
-
-## V.  Comparaisons multiples
-### Méthodes a posteriori 
-
-***FLO : exemple de méthodes
-
----
-
-## Notes
-
-Ce cours s’inspire des références suivantes:
+Ce cours s’inspire des références suivantes :
 
 - Frédéric Bertrand & Myriam Maumy-Bertrand
 - Franck Picard
