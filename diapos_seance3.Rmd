@@ -76,24 +76,7 @@ Séance 8 - 3h (14/03) Ancova
 
 Modèle : $$\widehat{Y} = E(Y)  = f(x) = \beta_0 + \beta_1 x$$
 
-la méthode des *moindres carrés ordinaires (MCO)* minimise l’*erreur quadratique moyenne* (EQM, la somme du carré des résidus).
-
-$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - f(x_i))^2$$
-
-La variance totale se décompose en la somme de la variance expliquée (par la regression) et la variance résiduelle.
-
-$$ \sum(Y_i - \overline{Y}_n)^2 = \sum(\widehat{Y}_i - \overline{Y}_n)^2 + \sum(Y_i - \widehat{Y}_i)^2 $$
-
-avec $Y_i$ la *i*-éme valeur observé pour $i=1,...,n$, $\widehat{Y}_i = f(x_i)$ la valeur estimée par le modèle pour $i=1,...,n$ et $\overline{Y}_n$  la moyenne empirique des $n$ observations.
-
-$$ SC_{tot} = SC_{reg} + SC_{res}$$ 
-
-Avec $SC_{tot}$ la somme des carrés totale,  $SC_{reg}$ la somme des carrés due à la régression et  $SC_{res}$ la somme des carrés des résidus.
-
-Le coefficient de determination $R^2$ mesure du pourcentage de la variance expliquée par le modèle.
-
-$$ R^2 = \frac{SC_{reg}}{SC_{tot}}$$
-
+$$Y_i = \beta_0 + \beta_1 x + e_i$$
 
 ```{r}
 d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
@@ -106,25 +89,43 @@ plot(d$taille, d$poids, main="poids~taille")
 # Y_i = b_0 + b_1.X_i + e_i
 m = lm(d$poids~d$taille)
 # m$coefficients
-abline(a=m$coefficients[[1]], b=m$coefficients[[2]], col=2) # /!\ y = b.x + a
-abline(h=mean(d$poids), lty=2)
 # residuals
 # m$residuals
 t = jitter(d$taille)
-suppressWarnings(arrows(t, d$poids, t, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.5), length=0.1))
-suppressWarnings(arrows(t, d$poids-m$residuals, t, mean(d$poids), col=adjustcolor(2, alpha.f=0.5), length=0.1))
-legend("topleft",c("regression line", "observations mean", "residuals", "explained variance"), col=c(1,1,4,2), lty=c(1,2,1,1), cex=.8)
-
+suppressWarnings(arrows(t, d$poids, t, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.2), length=0.1))
+suppressWarnings(arrows(t, d$poids-m$residuals, t, mean(d$poids), col=adjustcolor(2, alpha.f=0.2), length=0.1))
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]]) # /!\ y = b.x + a
+abline(h=mean(d$poids), lty=2)
+legend("topleft",c("regression line", "observations mean", "residual variance", "explained variance"), col=c(1,1,4,2), lty=c(1,2,1,1), cex=.8)
 ```
 
-```{r echo=TRUE, results="verbatim"}
-sc_res = sum(m$residuals^2)
-sc_reg = sum((d$poids-m$residuals - mean(d$poids))^2)
-sc_tot = sum((d$poids - mean(d$poids))^2)
+la méthode des *moindres carrés ordinaires (MCO)* minimise l’*erreur quadratique moyenne* (EQM, la somme du carré des résidus).
 
-sc_res
-sc_reg
+$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - f(x_i))^2$$
+
+La variance totale se décompose en la somme de la variance expliquée (par la regression) et la variance résiduelle.
+
+$$ \sum(Y_i - \overline{Y}_n)^2 = \sum(\widehat{Y}_i - \overline{Y}_n)^2 + \sum(Y_i - \widehat{Y}_i)^2 $$
+
+avec $Y_i$ la *i*-éme valeur observée pour $i=1,...,n$, $\widehat{Y}_i = f(x_i)$ la valeur estimée par le modèle pour $i=1,...,n$ et $\overline{Y}_n$  la moyenne empirique des $n$ observations.
+
+$$ SC_{tot} = SC_{reg} + SC_{res}$$ 
+
+Avec $SC_{tot}$ la somme des carrés totale,  $SC_{reg}$ la somme des carrés due à la régression et  $SC_{res}$ la somme des carrés des résidus.
+
+Le coefficient de determination $R^2$ mesure du pourcentage de la variance expliquée par le modèle.
+
+$$ R^2 = \frac{SC_{reg}}{SC_{tot}}$$
+
+
+```{r echo=TRUE, results="verbatim"}
+sc_tot = sum((d$poids - mean(d$poids))^2)
+sc_reg = sum((d$poids-m$residuals - mean(d$poids))^2)
+sc_res = sum(m$residuals^2)
+
 sc_tot
+sc_reg
+sc_res
 
 sc_reg / sc_tot
 
@@ -151,12 +152,12 @@ $$min_{\beta_0, ...,\beta_p}\sum^n_{i=1}\Big(y_i -(\beta_0+ \beta_1X_1 + ... + \
 
 $$Y \sim X$$
 
-*X* - La régression linéaire se caractérise par des variables explicatives **quantitatives** (Ex : taille). 
-L’analyse de la variance (ANOVA) se caractérise par des variables explicatives **qualitatives** (Ex : sexe).
+*X* - La régression linéaire se caractérise par des variables explicatives **quantitatives** (Ex : taille, poids). 
+L’analyse de la variance (ANOVA) se caractérise par des variables explicatives **qualitatives** (Ex : sexe, couleur des yeux).
 
-*Y* - Dans les deux cas la variable expliquée est quantitatives (ex : poids).
+*Y* - Dans les deux cas la variable expliquée est quantitatives.
 
-L’**ANOVA** à un facteur est un **test statistique** permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes gaussiennes et de même variance.
+L’**ANOVA** à un facteur est un à la fois un **modèle** statistique fondé sur la décomposition de la variance et **test** statistique permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes, gaussiennes et de même variance.
 
 Ex : le poids moyen de différent groupe d’individus.
 
@@ -218,24 +219,19 @@ où : $$\sum_{i=1}^I \beta_i = 0$$
 Ainsi : $$\mu_i = \mu + \beta_i, i=1,...,I$$
 
 
-Sous certaines hypothèses, l’ANOVA devient un test de comparaison des moyennes des facteurs.
-
-
 
 
 
 
 ### L'ANOVA à un facteur, un test de comparaison des moyennes
 
-Nous nous proposons de tester l’hypothèse nulle 
+Sous certaines hypothèses, l’ANOVA devient un test de comparaison des moyennes des facteurs.
 
-$$(H_0) : \mu_1 =\mu_2 =···=\mu_I$$
+Nous nous proposons de tester l’hypothèse nulle : $$H_0, \mu_1 =\mu_2 =···=\mu_I$$
 
-contre l’hypothèse alternative
+contre l’hypothèse alternative : $$H_1, \text{les moyennes } \mu_i \text{ ne sont pas toutes égales.}$$
 
-$$(H_1) : \text{les moyennes } \mu_i \text{ ne sont pas toutes égales}$$
-
-La méthode statistique qui permet d’effectuer ce test est appelée l’analyse de la variance à un facteur (one way analysis of variance).
+La méthode statistique qui permet d’effectuer ce test est appelée l’analyse de la variance à un facteur (*one way analysis of variance*).
 
 
 *Intuition 1* - Sous l’hypothèse nulle, et sous les hypothèses du test, l’interval de confiance (au risque $\alpha$) de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations. Si ce n’est pas le cas on rejette $H_0$ et on accepte $H_1$ au risque $\alpha$. Si c’est le cas on conserve $H_0$ au risque $\beta$ à calculer. 
@@ -270,12 +266,9 @@ legend("top", c("observations", "means per group", "means +/- 2sd", "global mean
 
 Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations, aux variables erreurs $\epsilon_{ij}$ qui sont inobservables et satisfont aux 3 conditions suivantes :
 
-1. Elles sont indépendantes.
-2. Elles ont même variance $\sigma^2$ inconnue. C’est la condition d’homogénéité des variances ou homoscédasticité
-3. Elles sont de loi gaussienne.
-
-Normalité des residus : $$L(\epsilon_{ij}) = N(0,\sigma^2), i=1,...,I \text{ et } j=1,...,J$$
-
+1. Elles sont indépendantes
+3. Elles sont de loi gaussienne (normalité)
+2. Elles ont même variance $\sigma^2$ inconnue (homogénéité des variances ou homoscédasticité)
 
 
 ```{r}
@@ -288,7 +281,7 @@ plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", y
 suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
 points(y_i, pch=3, col=2)
 # suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
-abline(h=mean(y_i), lty=2)
+# abline(h=mean(y_i), lty=2)
 
 axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
 legend("top", c("observations", "means per group", "residuals"), pch=c(1,3,5), col=c(1,2,4))
@@ -427,6 +420,10 @@ m = lm(d$count~d$spray)
 summary(m)
 ```
 
+### En pratique...
+
+  - Réaliser plusieurs modélisation du jeu de données CO2.
+  - Evaluer la puissance des modèles que vous proposez.
 
 https://github.com/fchuffar/tp_data_co2
 
@@ -458,7 +455,7 @@ Pour comparer ces quantités, R. A. Fisher, après les avoir
 
 Nous appelons *carré moyen associé au facteur* le terme 
 
-$$CM_F = \frac{SC_F}{I-i}$$
+$$CM_F = \frac{SC_F}{I-1}$$
 
 et *carré moyen résiduel* le terme :
 
@@ -507,8 +504,11 @@ anova(m)
 Il n’existe pas, dans un contexte général, de test statistique simple permettant d’étudier l’indépendance.
 Ce sont les conditions de l’expérience qui nous permettront d’affirmer que nous sommes dans le cas de l’indépendance.
 
+
 #### Normalité
 
+Nous ne pouvons pas, en général, la tester pour chaque échantillon. En effet le nombre d’observations est souvent très limité pour chaque échantillon.
+Nous allons donc la tester sur l’ensemble des données.
 
 Remarquons que si les conditions sont satisfaites et si nous notons :
 $$\epsilon_{ij} = Y_{ij} - \mu_i$$
@@ -517,30 +517,37 @@ alors c’est la même loi pour l’ensemble des unités.
 $$ L(\epsilon_{ij}) = N(0 ; \sigma_2) $$
 
 Les moyennes $\mu_i$ étant inconnues, nous les estimons par les
-estimateurs de la moyenne : les $Y_i$ où ils sont définis par
-1 XJ
+estimateurs de la moyenne : les $Y_i$.
 
 Nous pouvons alors tester la normalité, avec le test de Shapiro-Wilk ou avec le test de Shapiro-Francia sur l’ensemble des résidus.
 
 
-#### Homogénéité des variances
+
+#### Homoscedasticité
 
 Plusieurs tests permettent de tester l’égalité de plusieurs variances. Parmi ceux-ci, un test souvent utilisé est le test de Bartlett dont le protocole est le suivant.
 
-L’hypothèse nulle
+L’hypothèse nulle : $$H_0, \sigma_1^2 = \sigma_2^2 = ...= \sigma_I^2$$
 
-$$(H_0) : \sigma_1^2 = \sigma_2^2 = ...= \sigma_I^2$$
-
-contre l’hypothèse alternative
-
-$$(H_1) : \text{Les variances } \sigma_i^2 \text{ ne sont pas toutes égales.}$$
+contre l’hypothèse alternative : $$H_1, \text{Les variances } \sigma_i^2 \text{ ne sont pas toutes égales.}$$
 
 
-En pratique, nous pouvons l’appliquer lorsque les effectifs ni des $I$ échantillons sont tous au moins égaux à 3.
+En pratique, nous pouvons l’appliquer lorsque les effectifs $n_i$ des $I$ échantillons sont tous au moins égaux à 3.
 
 Ce test requiert la normalité des erreurs.
 
 Note : nous avons également testé l’homoscedasticité avec *Goldfeld-Quandt* dans le cadre du premier TP et lors de la seconde séance.
+
+
+
+### En pratique...
+
+  - Mettre en place une analyse de variance pour étudier l’e􏰒ffet du régime sur les temps de coagulation.
+  - Vérifier les hypothèses du teste. 
+
+```{r echo=TRUE, result="verbatim"}
+d = faraway::coagulation
+```
 
 ---
 
@@ -557,16 +564,17 @@ Dans notre exemple, nous avons décidé que les moyennes théoriques sont diffé
 Comme nous avons décidé que les moyennes théoriques sont différentes dans leur ensemble que le facteur étudié est à effets fixes et qu’il a plus de trois modalités, nous pourrions essayer de déterminer là où résident les différences avec un des tests de comparaisons multiples.
 
 ```{r echo=TRUE, results="verbatim"}
-m = lm(d$count~d$spray)
 summary(m)
 ```
 
 ---
 
-# Notes
+# Réferences
 
 Ce cours s’inspire des références suivantes :
 
 - Frédéric Bertrand & Myriam Maumy-Bertrand
 - Franck Picard
 - Irenne Ganaz
+
+http://irma.math.unistra.fr/~fbertran/enseignement/Master1_2016/Master1_Cours1.pdf
