@@ -18,6 +18,7 @@ knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, 
 
 
 ```{r}
+layout(1, respect=TRUE)
 d = readRDS("../data/data_brca12.rds")
 plot(d$brca1, d$brca2, col=d$pam50)
 legend("bottomright", levels(d$pam50), col=1:length(unique(d$pam50)), pch=1)
