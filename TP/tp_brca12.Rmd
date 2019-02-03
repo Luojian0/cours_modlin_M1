@@ -1,6 +1,6 @@
 ---
 title: "BRCA1 and BRCA2 expression in breast cancer (TCGA-BRCA)"
-author: "Florent Chuffart"
+author: "Magali Richard et Florent Chuffart"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_document:
@@ -13,7 +13,6 @@ output:
 
 
 ```{r, echo=FALSE, eval=TRUE}
-library(epimedtools)
 knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, eval=TRUE, echo=FALSE, results="hide")
 ```
 
