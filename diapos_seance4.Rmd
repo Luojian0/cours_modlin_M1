@@ -1,0 +1,888 @@
+---
+title: "ANOVA à 1 facteur"
+subtitle: "Séance 4 de *modèles linéaires*"
+author: "Florent Chuffart & Magali Richard"
+date: "`r Sys.Date()`"
+output: 
+  slidy_presentation:
+
+# output: html_document
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE, width = 75)
+knitr::opts_chunk$set(echo = TRUE, fig.width=15, fig.heigh=5, fig.align='center', dev='png', dpi = 95,
+echo=FALSE, results="hide")
+
+```
+
+---
+
+# Organisation
+
+## Pré-requis
+ 
+ - R https://cran.r-project.org 
+ - RStudio https://www.rstudio.com
+
+## Evaluation
+
+ - individuelle sur un jeu de données aprés 4 séances de cours 
+ - data challenge à la fin des séances
+
+## Supports
+
+ - https://github.com/magrichard/cours_modlin_M1
+
+
+## Découpage prévisionnelle
+
+Séance 1 - 3h (10/01) Régression linéaire simple
+
+Séance 2 - 3h (24/01) Régression linéaire multiple
+
+Séance 3 - 3h (31/01) Anova 1 facteur / partie A
+
+Séance 4 - 3h (14/02) Anova 1 facteur / partie B
+
+Séance 5 - 3h (21/02) Anova 2 facteurs
+
+Séance 6 - 3h (07/03) Anova multiple
+
+Séance 7 - 3h (11/03) Anova facteurs emboités
+
+Séance 8 - 3h (14/03) Ancova
+
+
+---
+
+# Plan
+
+### ANOVA à 1 facteur
+
+1. Rappels regression linéaire
+2. Rappels ANOVA à un facteur
+3. Test de l’ANOVA
+4. Comparaisons multiples
+5. Violation des conditions d'applicaition
+6. Transformation des variables
+7. Grandeur de l'effet expérimental
+8. Puissance
+9. Facteurs à effets aléatoires
+
+---
+
+# I. Rappels regression linéaire
+
+### Regression linéaire simple
+
+**Objectif de la regression linéaire simple** Considérons $x$ et $Y$ deux variables quantitatives. Y est expliquée (modélisée) par  la variable explicative $x$. 
+
+Modèle : $$\widehat{Y} = E(Y)  = f(x) = \beta_0 + \beta_1 x$$
+
+$$Y_i = \beta_0 + \beta_1 x + e_i$$
+
+```{r}
+d = read.table("data/data_nutri.csv", header=TRUE, sep=",", row.names = 1)
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+plot(d$taille, d$poids, main="poids~taille")
+## Model
+# Y~X
+# E(Y) = b.X
+# E(Y) = b_0 + b_1.X
+# Y_i = b_0 + b_1.X_i + e_i
+m = lm(d$poids~d$taille)
+# m$coefficients
+# residuals
+# m$residuals
+t = jitter(d$taille)
+suppressWarnings(arrows(t, d$poids, t, d$poids-m$residuals, col=adjustcolor(4, alpha.f=0.2), length=0.1))
+suppressWarnings(arrows(t, d$poids-m$residuals, t, mean(d$poids), col=adjustcolor(2, alpha.f=0.2), length=0.1))
+abline(a=m$coefficients[[1]], b=m$coefficients[[2]]) # /!\ y = b.x + a
+abline(h=mean(d$poids), lty=2)
+legend("topleft",c("regression line", "observations mean", "residual variance", "explained variance"), col=c(1,1,4,2), lty=c(1,2,1,1), cex=.8)
+```
+
+la méthode des *moindres carrés ordinaires (MCO)* minimise l’*erreur quadratique moyenne* (EQM, la somme du carré des résidus).
+
+$$EQM(\beta_0, \beta_1) = \sum^{n}_{i=1} (Y_i - f(x_i))^2$$
+
+La variance totale se décompose en la somme de la variance expliquée (par la regression) et la variance résiduelle.
+
+$$ \sum(Y_i - \overline{Y}_n)^2 = \sum(\widehat{Y}_i - \overline{Y}_n)^2 + \sum(Y_i - \widehat{Y}_i)^2 $$
+
+avec $Y_i$ la *i*-éme valeur observée pour $i=1,...,n$, $\widehat{Y}_i = f(x_i)$ la valeur estimée par le modèle pour $i=1,...,n$ et $\overline{Y}_n$  la moyenne empirique des $n$ observations.
+
+$$ SC_{tot} = SC_{reg} + SC_{res}$$ 
+
+Avec $SC_{tot}$ la somme des carrés totale,  $SC_{reg}$ la somme des carrés due à la régression et  $SC_{res}$ la somme des carrés des résidus.
+
+Le coefficient de determination $R^2$ mesure du pourcentage de la variance expliquée par le modèle.
+
+$$ R^2 = \frac{SC_{reg}}{SC_{tot}}$$
+
+
+```{r echo=TRUE, results="verbatim"}
+sc_tot = sum((d$poids - mean(d$poids))^2)
+sc_reg = sum((d$poids-m$residuals - mean(d$poids))^2)
+sc_res = sum(m$residuals^2)
+
+sc_tot
+sc_reg
+sc_res
+
+sc_reg / sc_tot
+
+m = lm(d$poids~d$taille)
+summary(m)
+```
+
+### Regression linéaire multiple
+
+**Objectif de la regression linéaire multiple** Considérons $X_1, ..., X_p$ et $Y$ plusieurs variables quantitatives. Y est expliquée (modélisée) par  les variable explicative $X_1, ..., X_p$. 
+
+Modèle : 
+
+$$\widehat{Y}  = \beta_0 + \beta_1X_1 + ... + \beta_pX_p + \epsilon  $$
+
+
+Utiliser les **moindres carrés** revient à minimiser la quantité suivante: 
+
+$$min_{\beta_0, ...,\beta_p}\sum^n_{i=1}\Big(y_i -(\beta_0+ \beta_1X_1 + ... + \beta_pX_p)\Big)^2$$
+
+---
+ 
+# II. Rappels ANOVA à un facteur
+
+$$Y \sim X$$
+
+*X* - La régression linéaire se caractérise par des variables explicatives **quantitatives** (Ex : taille, poids). 
+L’analyse de la variance (ANOVA) se caractérise par des variables explicatives **qualitatives** (Ex : sexe, couleur des yeux).
+
+*Y* - Dans les deux cas la variable expliquée est quantitatives.
+
+L’**ANOVA** à un facteur est un à la fois un **modèle** statistique fondé sur la décomposition de la variance et **test** statistique permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes, gaussiennes et de même variance.
+
+Ex : le poids moyen de différent groupe d’individus.
+
+L’analyse de la variance est l’une des procédures les plus utilisées dans les applications de la statistique ainsi que dans les méthodes d’analyse de données.
+
+
+
+
+
+
+### Exemple *InsectSprays*
+
+Cette base de données comprend le comptage du nombre d’abeilles présentent dans parcelle agricole (*count*, *numeric*) en fonction du type de spray utilisé sur cette parcelles (*spray*, *factor*).
+
+```{r results="verbatim", echo=TRUE}
+data("InsectSprays")
+d = InsectSprays
+head(d)
+tail(d)
+```
+
+$$Y \sim X$$
+
+On cherche à expliquer le nombre d’abeilles (Y) en fonction du type de spray (X).
+
+On s’intérroge sur l’effet du type de spray utilisé (X) sur le nombre d’abeilles observé (Y).
+
+
+```{r, echo=TRUE}
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+p = plot(d$spray, d$count, main="count~spray", xlab="spray", ylab="count", border="grey")
+points(jitter(as.numeric(d$spray)), d$count)
+```
+
+
+### L'ANOVA à un facteur, un modèle statistique
+
+$$Y_{ij} = \mu + \beta_i + \epsilon_{ij}$$
+
+
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=5, col=2)
+suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
+
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("top", c("Y_ij", "beta_i", "residuals", "mu"), pch=c(1,5,5,NA), col=c(1,2,4,1), lty=c(0,0,0,2), border=0)
+```
+
+où : $$\sum_{i=1}^I \beta_i = 0$$ 
+
+Ainsi : $$\mu_i = \mu + \beta_i, i=1,...,I$$
+
+
+
+
+
+
+### L'ANOVA à un facteur, un test de comparaison des moyennes
+
+Sous certaines hypothèses, l’ANOVA devient un test de comparaison des moyennes des facteurs.
+
+Nous nous proposons de tester l’hypothèse nulle : $$H_0, \mu_1 =\mu_2 =···=\mu_I$$
+
+contre l’hypothèse alternative : $$H_1, \text{les moyennes } \mu_i \text{ ne sont pas toutes égales.}$$
+
+La méthode statistique qui permet d’effectuer ce test est appelée l’analyse de la variance à un facteur (*one way analysis of variance*).
+
+
+*Intuition 1* - Sous l’hypothèse nulle, et sous les hypothèses du test, l’interval de confiance (au risque $\alpha$) de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations. Si ce n’est pas le cas on rejette $H_0$ et on accepte $H_1$ au risque $\alpha$. Si c’est le cas on conserve $H_0$ au risque $\beta$ à calculer. 
+
+*Intuition 2* - Si la variable observée pour chaque groupe est normalement distribuée, l’intervalle de confiance à $95\%$ de la moyenne de chaque groupe est très proche de la moyenne de chaque groupe +/- 2 fois l’écart type de chaque groupe. 
+
+Ici, ce n’est  pas le cas. Après vérification des hypothèse du test on pourrait tenter de rejetter $H_0$ et accepter $H_1$ au risque $\alpha$ de $5\%$.
+
+
+```{r results="verbatim",}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+s2_i = sapply(levels(d$spray), function(s) {
+ var(d[d$spray==s,]$count)
+})
+s_i = sqrt(s2_i)
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+abline(h=mean(y_i), lty=2)
+sp = 1:length(levels(d$spray))
+suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
+suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
+points(y_i, pch=3, col=2)
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("top", c("observations", "means per group", "means +/- 2sd", "global mean"), pch=c(1,3,4,NA), col=c(1,2,4,1), lty=c(0,0,0,2))
+```
+
+
+### Hypothèses du test
+
+Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations, aux variables erreurs $\epsilon_{ij}$ qui sont inobservables et satisfont aux 3 conditions suivantes :
+
+1. Elles sont indépendantes
+3. Elles sont de loi gaussienne (normalité)
+2. Elles ont même variance $\sigma^2$ inconnue (homogénéité des variances ou homoscédasticité)
+
+
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=3, col=2)
+# suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+# abline(h=mean(y_i), lty=2)
+
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("top", c("observations", "means per group", "residuals"), pch=c(1,3,5), col=c(1,2,4))
+```
+
+
+
+
+
+
+
+
+Ce test se fonde sur la décomposition de la variance.
+
+
+
+
+
+
+
+
+### Décomposition de la variance
+
+### Notations
+
+Pour les observations, nous utilisons deux indices : 
+
+- $i$ indifie le *i*-éme type de spray avec $i=1,...,I$.
+- $j$ indifie la *j*-éme observation (réplicat) pour chaque type de spray avec $j=1,...,J(i)$.
+
+Les observations sont notées $Y_{ij}$.
+
+Lorsque les groupes échantillons sont de même taille, nous disons que l’expérience est équilibrée.
+
+```{r results="verbatim", echo=TRUE}
+table(d$spray)
+```
+
+Si l’expérience est équilibrée $J(i) = J , \forall i$.
+
+Ainsi, les observations sont notées $Y_{ij}$
+
+La moyenne observée du groupe $i$ avec $i = 1,...,I$ s’écrit : 
+$$\overline{Y}_i = \frac{1}{J}\sum^J_{j=1}Y_{ij}$$
+
+La variance observée du groupe $i$ avec $i = 1,...,I$ s’écrit : 
+$$s_i^2(Y) = \frac{1}{J}\sum^J_{j=1}(Y_{ij} -\overline{Y}_i)^2$$
+
+
+*Remarque* : Cette dernière formule exprime la variance non corrigée. Très souvent, dans les ouvrages ou les logiciels, c’est la variance corrigée qui est utilisée : au lieu d’être divisée par J, la somme est divisée par J − 1.
+
+Dans notre exemple, la moyenne, la variance et l’écart type de chaque groupe sont : 
+
+```{r results="verbatim"}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+s2_i = sapply(levels(d$spray), function(s) {
+ var(d[d$spray==s,]$count)
+})
+s_i = sqrt(s2_i)
+print(y_i)
+print(s2_i)
+print(s_i)
+```
+
+
+```{r results="verbatim",}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+s2_i = sapply(levels(d$spray), function(s) {
+ var(d[d$spray==s,]$count)
+})
+s_i = sqrt(s2_i)
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+points(y_i, pch=4, col=2)
+sp = 1:length(levels(d$spray))
+suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
+suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("bottomright", c("Y_ij", "Y_i", "Y_i +/- 2 s_i"), pch=c(1,4,4), col=c(1,2,4))
+```
+
+### Propriétés fondamentales
+
+Le test est fondé sur deux propriétés des moyennes et des variances.
+
+(1) La moyenne de toutes les observations est la moyenne des moyennes de chaque échantillon. Ceci s’écrit :
+
+$$\overline{y} 
+ = \frac{1}{n} \sum_{j=1}^J \sum_{i=1}^I y_{ij} 
+ = \frac{1}{n} \sum_{i=1}^I \sum_{j=1}^J y_{ij}
+ = \frac{1}{I} \sum_{i=1}^I \overline{y_i} $$
+
+
+(2) La variance de toutes les observations est la somme de la variance des moyennes et de la moyenne des variances. Ceci s’écrit :
+
+$$s^2(y) =  
+ = \frac{1}{n} \sum_{j=1}^J \sum_{i=1}^I (y_{ij} - \overline{y})^2 
+ = \frac{1}{I} \sum_{i=1}^I (\overline{y_i} - \overline{y})^2 + \frac{1}{I}\sum_{i=1}^I s_i^2(y) $$
+
+On conserve la proriété vu dans la regression linéaire
+ 
+$$ SC_{tot} = SC_{F} + SC_{res}$$ 
+
+Avec $SC_{tot}$ la somme des carrés totale,  $SC_{F}$ la somme des carrés des facteurs et  $SC_{res}$ la somme des carrés des résidus.
+
+
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=5, col=2)
+suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
+
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("bottomright", c("Y_ij", "Y_i", "residuals"), pch=c(1,5,5), col=c(1,2,4))
+```
+
+Le coefficient de determination $R^2$ mesure du pourcentage de la variance expliquée par le modèle.
+
+$$ R^2 = \frac{SC_{F}}{SC_{tot}}$$
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(d$count~d$spray)
+summary(m)
+```
+
+### En pratique...
+
+  - Réaliser plusieurs modélisations du jeu de données CO2.
+  - Evaluer la puissance des modèles que vous proposez.
+
+https://github.com/fchuffar/tp_data_co2
+
+---
+
+# III. Test de l'ANOVA
+
+*Intuition* - Si l’hypothèse nulle $H_0$ est vraie alors la quantité $SC_F$ doit être petite par rapport à la quantité $SC_{res}$.
+Par contre, si l’hypothèse alternative $H_1$ est vraie alors la quantité $SC_F$ doit être grande par rapport à la quantité $SC_{res}$.
+
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=5, col=2)
+suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
+
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("bottomright", c("Y_ij", "SC_F", "SC_res"), pch=c(1,5,5), col=c(1,2,4))
+```
+
+Pour comparer ces quantités, R. A. Fisher, après les avoir
+"corrigées" par leurs degrés de liberté (ddl), a considéré leur rapport.
+
+Nous appelons *carré moyen associé au facteur* le terme 
+
+$$CM_F = \frac{SC_F}{I-1}$$
+
+et *carré moyen résiduel* le terme :
+
+$$CM_{res} = \frac{SC_{res}}{n-I}$$
+
+Le carré moyen résiduel est un estimateur sans biais de la variance des erreurs  $\sigma^2$.
+C’est pourquoi il est souvent également appelé variance résiduelle et presque systématiquement noté $S_{res}^2$ lorsqu’il sert à estimer la variance des erreurs.
+Sa valeur observée sur l’échantillon est ainsi notée $cm_{res}$ ou $s_{res}^2$ .
+
+
+Si les trois conditions sont satisfaites et si l’hypothèse nulle
+$H_0$ est vraie alors
+
+$$ F_{obs} = \frac{cm_F}{cm_{res}}$$
+
+est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à $I-1$ degrés de liberté au numérateur et $n-I$ degrés de liberté au dénominateur. Cette loi est notée  $\mathcal{F}_{I-1,n-I}$.
+
+
+---
+
+# III. Test de l'ANOVA
+## Tableau de l’analyse de la variance 
+
+| Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
+| :-------------------- | :-------: | :--: | :--: | ---:
+| Due au facteur        | $sc_{F}$  | $I-1$  | $cm_{F}=\frac{sc_{F}}{I-1}$ | $\frac{cm_{F}}{cm_{res}}$
+| Résiduelle            | $sc_{res}$| $n-I$  | $cm_{res}=\frac{sc_{res}}{n-I}$ 
+| Totale                | $sc_{tot}$| $n-1$ 
+
+```{r}
+m = lm(d$count~d$spray)
+anova(m)
+```
+
+---
+
+# III. Test de l'ANOVA
+## Test de l'ANOVA
+
+$\mathcal{H}_0 : \mu_1 = \mu_2 = ... = \mu_I$ contre $\mathcal{H}_1$ : les moyennes $\mu_i$ ne sont pas toutes égales 
+
+Satistique du test: $F_{obs} = \frac{cm_{F}}{cm_{res}}$
+
+Pour un seuil donné $\alpha$, les tables de Fisher nous fournissent une valeur critique $c$ telle que
+$\mathbb{P}_{H_0} [F \leq c] = 1 -\alpha$ Alors nous décidons :
+
+- si $F_{obs} < c$, $\mathcal{H}_0$ est vraie,
+- si $F_{obs} \geq c$, $\mathcal{H}_1$ est vraie,
+
+### Hypothèses du test
+
+- Indépendance
+- Normalité
+- Homoscedasticité
+
+
+---
+
+# IV.Comparaisons multiples
+
+
+Lorsque que nous rejettons $H_0$, nous pouvons chercher à analyser les différences entre les groupes. Nous procédons alors à des tests qui vont répondre à la question suivante : D’où vient la différence ? Quelles moyennes sont différentes ?
+
+Ces tests qui vont répondre à cette question sont les tests de comparaisons multiples, des adaptations du test de Student.
+
+Les méthodes de comparaison de moyennes à utiliser sont classées en comparaison *a priori* et *a posteriori*.
+
+---
+
+# IV.Comparaisons multiples
+## Méthodes *a priori*
+
+Avant de faire l’expérience, l’expérimentateur connaît la liste des hypothèses qu’il veut tester.
+Exemple : montrer que les deux premiers laboratoires sont différents des deux autres.
+
+Méthodes:
+
+- Méthode de Bonferroni
+- Méthode des contrastes linéaires (non détaillée)
+
+---
+
+# IV.Comparaisons multiples
+## Méthode de Bonferroni
+
+La plus connues est la correction de *Bonferroni*. Cela consiste à diviser le seuil par le nombre de comparaisons. Bonferroni a montré que cette procédure garantit un taux d’erreur global plus faible que le seuil initial.  
+
+Objectif : Comparer deux à deux toutes les moyennes possibles des I groupes
+
+1) Calculer le nombre de comparaisons : $n_c = (I \times (I- 1))/2$
+2) Erreur de type I: $\alpha = 5\%$
+3) Erreur pour chaque test : $\alpha' = 0.05/n_c$
+4) Hypothèses : $\mathcal{H}_0 : \mu_i = \mu_j$ contre $\mathcal{H}_1  : \mu_i \neq \mu_j$
+5) Statistique de test: $t_{obs} = \frac{\overline{y}_i-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i}+\frac{1}{n_j})}$
+6) Règle de décision : accepter $\mathcal{H}_0$ si $|t_{obs}| < t_{n-I;1-(\alpha'/2)}$
+
+### Exemple *InsectSprays* 
+
+Illustrons la procédure précédente en comparant le **srpay B et le spray C**.
+
+1) Nombre de comparaisons : $n_c = (6 \times (6- 5))/2 = 15$
+```{r results="verbatim"}
+n = length(d$count)
+I = length(levels(d$spray))
+n_c = (I * (I-1))/2
+```
+
+2) Erreur de type I: $\alpha = 5\%$
+3) Erreur pour chaque test : $\alpha' = 0.05/15 = 0.003$
+
+```{r results="verbatim"}
+alpha = 0.05
+alpha_prime = 0.05/n_c
+```
+
+4) Hypothèses : $\mathcal{H}_0 : \mu_B = \mu_C$ contre $\mathcal{H}_1  : \mu_B \neq \mu_C$
+5) Statistique de test: $t_{obs} = \frac{\overline{y}_i-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i}+\frac{1}{n_j})}$
+
+```{r results="verbatim"}
+table(d$spray)
+n_B = table(d$spray)[2]
+print(n_B)
+n_C = table(d$spray)[3]
+print(n_C)
+
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+y_B = y_i[2]
+print(y_B)
+y_C = y_i[3]
+print(y_C)
+
+m = lm(d$count~d$spray)
+anova(m)
+s_2r = anova(m)[2,3] #cm_r est un estimateur sans biais de la variance des erreurs (variance résiduelle)
+print(s_2r)
+
+t_obs = (y_B - y_C)/sqrt(s_2r*(1/n_B + 1/n_C))
+print(t_obs)
+```
+
+6) Règle de décision : accepter $\mathcal{H}_0$ si $|t_{obs}| < t_{n-I;1-(\alpha'/2)}$
+
+```{r echo=TRUE, results="verbatim"}
+t_seuil = qt(p = (1-alpha_prime/2), df = (n-I))
+print(t_seuil)
+
+```
+
+Nous rejetons $\mathcal{H}_0$ car $|t_{obs}| > t_{n-I;1-(\alpha'/2)}$
+
+Regardons maintenant le  **spray B et le spray A**.
+
+1) Nombre de comparaisons : $n_c = (6 \times (6- 5))/2 = 15$
+```{r results="verbatim"}
+n = length(d$count)
+I = length(levels(d$spray))
+n_c = (I * (I-1))/2
+```
+
+2) Erreur de type I: $\alpha = 5\%$
+3) Erreur pour chaque test : $\alpha' = 0.05/15 = 0.003$
+
+```{r results="verbatim"}
+alpha = 0.05
+alpha_prime = 0.05/n_c
+```
+
+4) Hypothèses : $\mathcal{H}_0 : \mu_B = \mu_C$ contre $\mathcal{H}_1  : \mu_B \neq \mu_C$
+5) Statistique de test: $t_{obs} = \frac{\overline{y}_i-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i}+\frac{1}{n_j})}$
+
+```{r results="verbatim"}
+table(d$spray)
+n_B = table(d$spray)[2]
+print(n_B)
+n_A = table(d$spray)[1]
+print(n_A)
+
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+y_B = y_i[2]
+print(y_B)
+y_A = y_i[1]
+print(y_C)
+
+m = lm(d$count~d$spray)
+anova(m)
+s_2r = anova(m)[2,3] #cm_r est un estimateur sans biais de la variance des erreurs (variance résiduelle)
+print(s_2r)
+
+t_obs = (y_B - y_A)/sqrt(s_2r*(1/n_B + 1/n_A))
+print(t_obs)
+```
+
+6) Règle de décision : accepter $\mathcal{H}_0$ si $|t_{obs}| < t_{n-I;1-(\alpha'/2)}$
+
+```{r echo=TRUE, results="verbatim"}
+t_seuil = qt(p = (1-alpha_prime/2), df = (n-I))
+print(t_seuil)
+
+```
+
+Nous conservons $\mathcal{H}_0$ car $|t_{obs}| < t_{n-I;1-(\alpha'/2)}$
+
+```{r}
+y_i = sapply(levels(d$spray), function(s) {
+ mean(d[d$spray==s,]$count)
+})
+layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
+sp = jitter(as.numeric(d$spray))
+plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
+suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
+points(y_i, pch=5, col=2)
+suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
+abline(h=mean(y_i), lty=2)
+
+axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
+legend("bottomright", c("Y_ij", "SC_F", "SC_res"), pch=c(1,5,5), col=c(1,2,4))
+```
+
+---
+
+# IV.Comparaisons multiples
+## Méthodes *a posteriori*
+
+Après l’expérience, l’expérimentateur regarde les résultats et oriente ses tests en fonction de ce qu’il observe dans les données. 
+
+**Exemple** : prendre la plus grande et la plus petite moyenne et tester si elles sont vraiment différentes.
+
+Méthodes:
+
+- Méthode basée sur la statistique de rang studentisée (non détaillée)
+- Méthode de Newman Keuls (non détaillée)
+- Méthode de Tukey HSD
+
+---
+
+# IV.Comparaisons multiples
+## Méthode de Tukey HSD
+
+**Objectif** : Classer les traitements par groupes qui sont significativement différents.
+
+**Méthode** :
+
+- Étape 1 : Ordonner les moyennes et calculer toutes les différences deux à deux entre moyennes.
+- Étape 2 : Calculer pour r = 2 à I les différences minimum significatives Wr
+- Étape 3 : Dans le tableau des différences, prendre comme différence minimum significative WI pour toutes les différences. WI est ici alors noté « HSD » (Honestly Significant Difference)
+- Étape 4 : Classer les traitements par groupes significativement différents.
+
+Les moyennes observées $y_i$ sont rangées par ordre croissant. Nous rappelons que nous les notons
+$\overline{y}_1, \overline{y}_2,..., \overline{y}_I$, et les moyennes théoriques associées
+$\mu_1, \mu_2,..., \mu_I$.
+
+Pour chaque $i < i'$, nous considérons l’hypothèse nulle
+ $\mathcal{H}_0 : \mu_i =\mu_{i'}$ contre l’hypothèse alternative
+ $\mathcal{H}_1 : \mu_i' > \mu_{i}$.
+
+Statistique de test: $t_{i',i, obs} = \frac{\overline{y}_{i'}-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i'}+\frac{1}{n_i})}$
+
+Le rapport $t_{i',i, obs}$ défini par ci-dessus est la réalisation d’une variable aléatoire $\mathcal{T}$ qui, si l’hypothèse nulle  $\mathcal{H}_0 $ est vraie, suit une loi appelée étendue studentisée (studentized range) et que nous notons $\mathcal{\widetilde{T}}_{n-I,I}$
+
+Pour un seuil donné $\alpha$, les tables de l'étendue studentisée nous fournissent une valeur critique $c$ telle que
+$\mathbb{P}_{H_0} [T \leq c] = 1 -\alpha$ Alors nous décidons :
+
+- si $t_{i',i, obs} < c$, $\mathcal{H}_0$ est vraie,
+- si $t_{i',i, obs} \geq c$, $\mathcal{H}_1$ est vraie.
+
+*Remarque*: La valeur critique $c$ ne dépend que des indices $n - I$, degrés de liberté de la somme des carrés résiduelle, et de $I$, nombre des moyennes comparées. De plus, les moyennes théoriques, dont les moyennes observées sont comprises entre deux moyennes observées, dont les moyennes théoriques correspondantes sont déclarées égales, sont déclarées égales avec ces dernières.
+
+```{r echo=TRUE, results="verbatim"}
+m = aov(d$count~d$spray)
+TukeyHSD(m)
+plot(TukeyHSD(m))
+```
+
+---
+
+# V. Violation des conditions d'application
+
+Comme nous l’avons vu, l’analyse de la variance à un facteur se base sur les conditions d’application imposant
+1) l’indépendance des variables « erreurs »,
+2) la normalité des variables « erreurs »,
+3) l’homogénéité des variances des variables « erreurs ».
+
+Les sujets doivent être répartis aléatoirement dans les groupes. Enfreindre la condition d’application d’indépendance des variables « erreurs »nuit gravement à la santé de l’analyse de la variance.
+Lorsque nous nous trouvons dans une situation où un même sujet aura subi plusieurs traitements, ou un même sujet aura été vu plusieurs fois, nous serons alors dans le cas où il faudra utiliser les plans à mesures répétées. Ce sujet sera traité dans un prochain chapitre.
+
+---
+
+# V. Violation des conditions d'application
+## Normalité des variables erreurs
+
+En ce qui concerne la condition d’application de normalité des variables « erreurs », nous sommes tout aussi stricts : il ne faut pas l’enfreindre.
+Il faut savoir que d’autres techniques statistiques existent lorsque la condition de normalité n’est pas vérifiée.
+Par exemple, nous pouvons envisager des transformations normalisantes. Nous renvoyons le lecteur au paragraphe suivant pour de plus amples renseignements à ce sujet.
+
+---
+
+# V. Violation des conditions d'application
+##  L’homogénéité des variables « erreurs »
+
+En ce qui concerne la condition d’application d’homogénéité, nous sommes encore aussi stricts : il ne faut absolument pas l’enfreindre.
+Il faut savoir que d’autres techniques statistiques existent lorsque la condition d’homogénéité n’est pas vérifiée. Par exemple, Box (1954) a montré que dans le cas de variances hétérogènes, la distribution F adéquate à laquelle il faut comparer Fobs est une F régulière avec des ddl modifiés. Pour de plus amples détails sur cette procédure, nous renvoyons en première lecture au livre de Howell et en seconde lecture à l’article de Box. Mais l’approche de Box présente un inconvénient majeur : elle est extrêmement conservatrice. Il existe toutefois des alternatives.
+
+---
+
+# V. Violation des conditions d'application
+##  Les alternatives
+
+Welch (1951) a proposé une autre approche, que nous ne présenterons pas ici par manque de temps. Le lecteur intéressé par ce sujet pourra en première lecture ouvrir le livre de Howell (sixième édition) à la page 327, puis aller lire l’article original de Welch. Il est à noter que la procédure de Welch se trouve dans la plupart des logiciels statistiques.
+Enfin, à titre d’information, Wilcox (1987), dans son ouvrage
+« New statistical procedures for the social sciences » a un avis tranché sur les conséquences de l’hétérogénéité des variances. Il conseille d’utiliser la procédure de Welch, et en particulier lorsque les échantillons sont de tailles inégales.
+
+
+Lorsque l’une des deux conditions (la condition de normalité des variables erreurs ou la condition d’homogénéité des variables erreurs) n’est pas vérifiée au moyen d’un test statistique, il faut s’assurer que cela n’est pas dû à une valeur extrême ou aberrante. Par exemple, pour savoir si une des valeurs recueillies n’est pas représentative, nous pouvons par exemple utiliser les tests de Grubbs ou de Dixon. Pour ce sujet, le lecteur pourra consulter le cours qui est en ligne.
+
+---
+
+# VI. Transformation
+
+Il n’est pas conseillé dans un premier temps, d’utiliser les transformations normalisantes, mais plutôt d’avoir une réflexion profonde sur la nature des données à analyser et sur le modèle statistique à utiliser.
+En dernier recours, nous pourrons les envisager, comme nous l’avons conseillé dans le paragraphe précédent. Il en existe un certain nombre. Voici les principales :
+ 
+$y_i′ =log(y_i )$ la transformation logarithmique, 
+$y_i′ =y_i^\gamma$ la transformation puissance,
+$y_i′ =\Phi^{-1}y_i$ la transformation réciproque,
+$y_i′ = arcsin(\sqrt{y_i} )$la transformation arc sinus,
+$y_i′ = ...$
+
+Si nous n’avons toujours pas les conditions requises après ces transformations, il faut alors utiliser le test non paramétrique de Kruskal-Wallis. Ce test sera présenté dans un chapitre prochain, avec les tests non paramétriques qui peuvent être utilisés pour des analyses.
+
+---
+
+# VII. Grandeur de l'effet expérimental
+
+À l’heure actuelle, il existe au moins six mesures de la grandeur de l’effet expérimental. Elles sont toutes différentes et prétendent toutes être moins biaisées que les autres mesures. Ici, dans ce cours nous présenterons uniquement une des mesures les plus courantes : le eta carré
+
+** Mesure de la taille de l'effet $\eta^2$**
+
+Quand le test d’égalité des moyennes est rejeté (l’hypothèse nulle H0 est rejetée), nous pouvons souhaiter donner une mesure de la taille de la différence entre moyennes.
+Nous définissons η2 comme le « pourcentage » de la variabilité des données Yij expliquée par la différence entre les groupes :
+
+$\eta^2  =1− \frac{SC_R}{SC_{Tot}} = \frac{SC_{Facteur}}{SC_{Tot}}$
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(d$count~d$spray)
+anova(m)
+SC_fac =  anova(m)[1,2]
+print(SC_fac)
+SC_res =  anova(m)[2,2]
+print(SC_res)
+eta_2 = 1-SC_res/SC_fac
+print(eta_2)
+```
+
+Dans l’analyse de la régression linéaire simple, nous utilisons le coefficient de détermination R2 pour mesurer le pourcentage de la variance de la variable Y expliquée par le modèle. Rappelons ici sa défintion :
+
+$R^2  =1− \frac{SC_R}{SC_{Tot}} = \frac{SC_{regression}}{SC_{Tot}}$
+
+Cette égalité ressemble beaucoup à celle qui définit le eta carré. Nous pouvons donc faire un parallèle entre ces deux mesures.
+
+---
+
+# VIII. Facteur à effet aléatoire
+## Définition
+
+Dans l’analyse de la variance à un facteur à effets fixes avec I modalités, nous observons pour chaque modalité du facteur ni réalisations indépendantes d’une variable aléatoire Y . Nous savons que le modèle utilisé dans cette analyse s’écrit :
+
+$Y_{ij} = \mu +\alpha_i + \epsilon_{ij}$, $j = 1,...,n_i$, $j = 1,...,I$ 
+
+où $\epsilon_{ij}$ son indépendantes et $\mathcal{L}(\epsilon_{ij}) = \mathcal{N}(0,\sigma^2)$. Cette variable représente l'erreur commise lors des observations, $\mu$ désigne l'effet fglobal ou moyenne générale de la variable aléatoire $Y$ et les effets $\alpha_i$ satisfons la contrainte $\Sigma^I_{i=1} \alpha_i = 0$
+
+Mais ce modèle ne correspond pas toujours à la réalité. Dans certains cas, en particulier quand les modalités sont choisies au hasard, le fait de supposer que les effets sont fixes n’est pas adapté. Nous sommes amenés à considérer que chaque contribution αi est une réalisation, indépendante des autres réalisations,d’unevariablealéatoire $A_i$ de loi $\mathcal{N}(0,\sigma^2_A)$,elle même indépendante de $\espilon$. Dans ces conditions le modèle s’écrit :
+
+$Y_{ij} = \mu +A_i + \epsilon_{ij}$, $j = 1,...,n_i$, $j = 1,...,I$ 
+
+
+---
+
+# VIII. Facteur à effet aléatoire
+## Test et tableau de l'ANOVA
+
+Nous proposons alors de tester l'hypothèse nulle
+ $\mathcal{H}_0 : \sigma^2_A =0$ contre l’hypothèse alternative
+ $\mathcal{H}_1 : \sigma^2_A \neq 0$.
+
+Ce test ne compare plus les moyennes mais teste au moyen de la variance du facteur A, si il y a un effet de ce facteur aléatoire.
+
+
+| Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
+| :-------------------- | :-------: | :--: | :--: | ---:
+| Due au facteur        | $sc_{F}$  | $I-1$  | $cm_{A}$ | $\frac{cm_{A}}{cm_{res}}$
+| Résiduelle            | $sc_{res}$| $n-I$  | $cm_{res}$ 
+| Totale                | $sc_{tot}$| $n-1$ 
+
+  Remarq* :
+Nous *retrouvons strictement les mêmes formules que celles du cas de l’analyse de la variance à un facteur à effets fixes.
+
+---
+
+# VSi les trois conditions sont satisfaites et si l’hypothèse nulle
+        (H0) est vraie alors
+$Fobs = \frac{cm_A} {cm)_R}$
+ est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à $I − 1$ degrés de liberté au numérateur et $n − I$ degrés de liberté au dénominateur. Cette loi est notée $\mathcal{F}_{I−1,n−I}$.
+ 
+III. Facteur à effet aléatoire
+## Remarques
+
+La démarche pratique est donc la même que dans l’analyse à un facteur à effets fixes.
+2 Cependant, les comparaisons multiples, lorsque l’hypothèse alternative (H1) est acceptée, n’ont plus de sens et ne doivent pas être effectuées.
+3 De même, le calcul de la puissance est différent.
+4 De plus, la normalité des erreurs ne peut plus être testée.
+5 En revanche, la normalité des Yij − μ, quantités qui sont estimées par yij − y , peut être testée.
+        
+        
+---
+
+# Réferences
+
+Ce cours s’inspire des références suivantes :
+
+- Frédéric Bertrand & Myriam Maumy-Bertrand
+- Franck Picard
+- Irenne Ganaz
+
+http://irma.math.unistra.fr/~fbertran/enseignement/Master1_2016/Master1_Cours1.pdf
