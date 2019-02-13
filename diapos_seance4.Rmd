@@ -156,14 +156,11 @@ $$min_{\beta_0, ...,\beta_p}\sum^n_{i=1}\Big(y_i -(\beta_0+ \beta_1X_1 + ... + \
 
 $$Y \sim X$$
 
-*X* - La régression linéaire se caractérise par des variables explicatives **quantitatives** (Ex : taille, poids). 
-L’analyse de la variance (ANOVA) se caractérise par des variables explicatives **qualitatives** (Ex : sexe, couleur des yeux).
+*X* - L’analyse de la variance (ANOVA) se caractérise par des variables explicatives **qualitatives** (Ex : sexe, couleur des yeux).
 
-*Y* - Dans les deux cas la variable expliquée est quantitatives.
+*Y* - Dans les deux cas la variable expliquée est quantitatives (Ex : taille, poids).
 
 L’**ANOVA** à un facteur est un à la fois un **modèle** statistique fondé sur la décomposition de la variance et **test** statistique permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes, gaussiennes et de même variance.
-
-Ex : le poids moyen de différent groupe d’individus.
 
 L’analyse de la variance est l’une des procédures les plus utilisées dans les applications de la statistique ainsi que dans les méthodes d’analyse de données.
 
@@ -174,20 +171,12 @@ L’analyse de la variance est l’une des procédures les plus utilisées dans 
 
 ### Exemple *InsectSprays*
 
-Cette base de données comprend le comptage du nombre d’abeilles présentent dans parcelle agricole (*count*, *numeric*) en fonction du type de spray utilisé sur cette parcelles (*spray*, *factor*).
-
 ```{r results="verbatim", echo=TRUE}
 data("InsectSprays")
 d = InsectSprays
 head(d)
 tail(d)
 ```
-
-$$Y \sim X$$
-
-On cherche à expliquer le nombre d’abeilles (Y) en fonction du type de spray (X).
-
-On s’intérroge sur l’effet du type de spray utilisé (X) sur le nombre d’abeilles observé (Y).
 
 
 ```{r, echo=TRUE}
@@ -235,37 +224,6 @@ Nous nous proposons de tester l’hypothèse nulle : $$H_0, \mu_1 =\mu_2 =···
 
 contre l’hypothèse alternative : $$H_1, \text{les moyennes } \mu_i \text{ ne sont pas toutes égales.}$$
 
-La méthode statistique qui permet d’effectuer ce test est appelée l’analyse de la variance à un facteur (*one way analysis of variance*).
-
-
-*Intuition 1* - Sous l’hypothèse nulle, et sous les hypothèses du test, l’interval de confiance (au risque $\alpha$) de la moyenne de chaque groupe doit contenir la moyenne de toutes les observations. Si ce n’est pas le cas on rejette $H_0$ et on accepte $H_1$ au risque $\alpha$. Si c’est le cas on conserve $H_0$ au risque $\beta$ à calculer. 
-
-*Intuition 2* - Si la variable observée pour chaque groupe est normalement distribuée, l’intervalle de confiance à $95\%$ de la moyenne de chaque groupe est très proche de la moyenne de chaque groupe +/- 2 fois l’écart type de chaque groupe. 
-
-Ici, ce n’est  pas le cas. Après vérification des hypothèse du test on pourrait tenter de rejetter $H_0$ et accepter $H_1$ au risque $\alpha$ de $5\%$.
-
-
-```{r results="verbatim",}
-y_i = sapply(levels(d$spray), function(s) {
- mean(d[d$spray==s,]$count)
-})
-s2_i = sapply(levels(d$spray), function(s) {
- var(d[d$spray==s,]$count)
-})
-s_i = sqrt(s2_i)
-layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
-sp = jitter(as.numeric(d$spray))
-plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
-abline(h=mean(y_i), lty=2)
-sp = 1:length(levels(d$spray))
-suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
-suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=4, length=0.05, angle=135))
-points(y_i, pch=3, col=2)
-axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
-legend("top", c("observations", "means per group", "means +/- 2sd", "global mean"), pch=c(1,3,4,NA), col=c(1,2,4,1), lty=c(0,0,0,2))
-```
-
-
 ### Hypothèses du test
 
 Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations, aux variables erreurs $\epsilon_{ij}$ qui sont inobservables et satisfont aux 3 conditions suivantes :
@@ -275,159 +233,11 @@ Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations,
 2. Elles ont même variance $\sigma^2$ inconnue (homogénéité des variances ou homoscédasticité)
 
 
-```{r}
-y_i = sapply(levels(d$spray), function(s) {
- mean(d[d$spray==s,]$count)
-})
-layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
-sp = jitter(as.numeric(d$spray))
-plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
-suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
-points(y_i, pch=3, col=2)
-# suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
-# abline(h=mean(y_i), lty=2)
-
-axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
-legend("top", c("observations", "means per group", "residuals"), pch=c(1,3,5), col=c(1,2,4))
-```
-
-
-
-
-
-
-
 
 Ce test se fonde sur la décomposition de la variance.
 
 
 
-
-
-
-
-
-### Décomposition de la variance
-
-### Notations
-
-Pour les observations, nous utilisons deux indices : 
-
-- $i$ indifie le *i*-éme type de spray avec $i=1,...,I$.
-- $j$ indifie la *j*-éme observation (réplicat) pour chaque type de spray avec $j=1,...,J(i)$.
-
-Les observations sont notées $Y_{ij}$.
-
-Lorsque les groupes échantillons sont de même taille, nous disons que l’expérience est équilibrée.
-
-```{r results="verbatim", echo=TRUE}
-table(d$spray)
-```
-
-Si l’expérience est équilibrée $J(i) = J , \forall i$.
-
-Ainsi, les observations sont notées $Y_{ij}$
-
-La moyenne observée du groupe $i$ avec $i = 1,...,I$ s’écrit : 
-$$\overline{Y}_i = \frac{1}{J}\sum^J_{j=1}Y_{ij}$$
-
-La variance observée du groupe $i$ avec $i = 1,...,I$ s’écrit : 
-$$s_i^2(Y) = \frac{1}{J}\sum^J_{j=1}(Y_{ij} -\overline{Y}_i)^2$$
-
-
-*Remarque* : Cette dernière formule exprime la variance non corrigée. Très souvent, dans les ouvrages ou les logiciels, c’est la variance corrigée qui est utilisée : au lieu d’être divisée par J, la somme est divisée par J − 1.
-
-Dans notre exemple, la moyenne, la variance et l’écart type de chaque groupe sont : 
-
-```{r results="verbatim"}
-y_i = sapply(levels(d$spray), function(s) {
- mean(d[d$spray==s,]$count)
-})
-s2_i = sapply(levels(d$spray), function(s) {
- var(d[d$spray==s,]$count)
-})
-s_i = sqrt(s2_i)
-print(y_i)
-print(s2_i)
-print(s_i)
-```
-
-
-```{r results="verbatim",}
-y_i = sapply(levels(d$spray), function(s) {
- mean(d[d$spray==s,]$count)
-})
-s2_i = sapply(levels(d$spray), function(s) {
- var(d[d$spray==s,]$count)
-})
-s_i = sqrt(s2_i)
-layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
-sp = jitter(as.numeric(d$spray))
-plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
-points(y_i, pch=4, col=2)
-sp = 1:length(levels(d$spray))
-suppressWarnings(arrows(sp, y_i, sp, y_i + 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
-suppressWarnings(arrows(sp, y_i, sp, y_i - 2 * sqrt(s2_i), col=adjustcolor(4, alpha.f=0.5), length=0.05, angle=135))
-axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
-legend("bottomright", c("Y_ij", "Y_i", "Y_i +/- 2 s_i"), pch=c(1,4,4), col=c(1,2,4))
-```
-
-### Propriétés fondamentales
-
-Le test est fondé sur deux propriétés des moyennes et des variances.
-
-(1) La moyenne de toutes les observations est la moyenne des moyennes de chaque échantillon. Ceci s’écrit :
-
-$$\overline{y} 
- = \frac{1}{n} \sum_{j=1}^J \sum_{i=1}^I y_{ij} 
- = \frac{1}{n} \sum_{i=1}^I \sum_{j=1}^J y_{ij}
- = \frac{1}{I} \sum_{i=1}^I \overline{y_i} $$
-
-
-(2) La variance de toutes les observations est la somme de la variance des moyennes et de la moyenne des variances. Ceci s’écrit :
-
-$$s^2(y) =  
- = \frac{1}{n} \sum_{j=1}^J \sum_{i=1}^I (y_{ij} - \overline{y})^2 
- = \frac{1}{I} \sum_{i=1}^I (\overline{y_i} - \overline{y})^2 + \frac{1}{I}\sum_{i=1}^I s_i^2(y) $$
-
-On conserve la proriété vu dans la regression linéaire
- 
-$$ SC_{tot} = SC_{F} + SC_{res}$$ 
-
-Avec $SC_{tot}$ la somme des carrés totale,  $SC_{F}$ la somme des carrés des facteurs et  $SC_{res}$ la somme des carrés des résidus.
-
-
-```{r}
-y_i = sapply(levels(d$spray), function(s) {
- mean(d[d$spray==s,]$count)
-})
-layout(matrix(1:2, 1, byrow=TRUE), respect=TRUE)
-sp = jitter(as.numeric(d$spray))
-plot(sp, d$count, main="count~spray", las=2, type="p", xaxt="n", xlab="spray", ylab="count")
-suppressWarnings(arrows(sp, d$count, sp, rep(y_i,each=12), col=adjustcolor(4, alpha.f=0.5), length=0.05))
-points(y_i, pch=5, col=2)
-suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9), length=0.05))
-abline(h=mean(y_i), lty=2)
-
-axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
-legend("bottomright", c("Y_ij", "Y_i", "residuals"), pch=c(1,5,5), col=c(1,2,4))
-```
-
-Le coefficient de determination $R^2$ mesure du pourcentage de la variance expliquée par le modèle.
-
-$$ R^2 = \frac{SC_{F}}{SC_{tot}}$$
-
-```{r echo=TRUE, results="verbatim"}
-m = lm(d$count~d$spray)
-summary(m)
-```
-
-### En pratique...
-
-  - Réaliser plusieurs modélisations du jeu de données CO2.
-  - Evaluer la puissance des modèles que vous proposez.
-
-https://github.com/fchuffar/tp_data_co2
 
 ---
 
