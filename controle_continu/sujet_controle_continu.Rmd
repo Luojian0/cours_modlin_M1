@@ -1,0 +1,50 @@
+---
+title: "Sujet contrôle continu"
+subtitle: "Université Grenoble Alpes - Master SSD - UE Modèle linéaire"
+author: "Florent Chuffart & Magali Richard"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r, echo=FALSE, eval=TRUE}
+knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, eval=TRUE, echo=FALSE, results="hide")
+```
+
+# Sujet
+
+On s'intéresse au niveau du gène BRCA1 dans le cancer du sein (150 patients). 
+
+```{r,  echo = TRUE}
+layout(1, respect=TRUE)
+d = readRDS("../data/data_brca12.rds")
+head(d)
+```
+
+La colonne brca1 indique le niveau d'expression du gène BRCA1 dans chaque patient.
+
+La colonne brca2 indique le niveau d'expression de BRCA2 dans chaque patient.
+
+La colonne pam50 fait référence au type histologique du cancer identifié dans chaque patient.
+
+```{r, out.width = "300px", fig.align="center", echo = TRUE, verbatim}
+
+plot(d$brca1, d$brca2, col=d$pam50)
+legend("bottomright", levels(d$pam50), col=1:length(unique(d$pam50)), pch=1)
+```
+
+Après visualisation des données, l'expérimentateur soupçonne une relation entre le niveau d'expression de BRCA1 et:
+
+- le niveau d'expression de BRCA2
+- le type histologique des cancer
+
+En vous inspirant des exercices effectués en cours, réalisez au moins deux modèles d'analyse de l'expression de BRCA1.
+
+Décrivez votre méthode d’un point de vue statistique, justifiez vos choix
+Critiquez les résultats obtenus d’un point de vue biologique.
+
+Veuillez restituer votre travail sous le format d'un PDF de quatre pages maximum (graphiques compris)
+
+Ce travail est à renvoyer par e-mail avant le mercredi 20 mars 2019 (minuit) à :
+
+- magali.richard@univ-grenoble-alpes.fr & florent.chuffart@univ-grenoble-alpes.fr 
+
