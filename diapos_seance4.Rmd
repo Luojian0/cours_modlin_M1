@@ -35,7 +35,7 @@ echo=FALSE, results="hide")
  - https://github.com/magrichard/cours_modlin_M1
 
 
-## Découpage prévisionnelle
+## Découpage prévisionnel
 
 Séance 1 - 3h (10/01) Régression linéaire simple
 
@@ -67,8 +67,7 @@ Séance 8 - 3h (14/03) Ancova
 5. Violation des conditions d'applicaition
 6. Transformation des variables
 7. Grandeur de l'effet expérimental
-8. Puissance
-9. Facteurs à effets aléatoires
+8. Facteurs à effets aléatoires
 
 ---
 
@@ -121,25 +120,9 @@ Le coefficient de determination $R^2$ mesure du pourcentage de la variance expli
 
 $$ R^2 = \frac{SC_{reg}}{SC_{tot}}$$
 
-
-```{r echo=TRUE, results="verbatim"}
-sc_tot = sum((d$poids - mean(d$poids))^2)
-sc_reg = sum((d$poids-m$residuals - mean(d$poids))^2)
-sc_res = sum(m$residuals^2)
-
-sc_tot
-sc_reg
-sc_res
-
-sc_reg / sc_tot
-
-m = lm(d$poids~d$taille)
-summary(m)
-```
-
 ### Regression linéaire multiple
 
-**Objectif de la regression linéaire multiple** Considérons $X_1, ..., X_p$ et $Y$ plusieurs variables quantitatives. Y est expliquée (modélisée) par  les variable explicative $X_1, ..., X_p$. 
+**Objectif de la regression linéaire multiple** Considérons $X_1, ..., X_p$ et $Y$ plusieurs variables quantitatives. Y est expliquée (modélisée) par  les variable explicatives $X_1, ..., X_p$. 
 
 Modèle : 
 
@@ -150,22 +133,41 @@ Utiliser les **moindres carrés** revient à minimiser la quantité suivante:
 
 $$min_{\beta_0, ...,\beta_p}\sum^n_{i=1}\Big(y_i -(\beta_0+ \beta_1X_1 + ... + \beta_pX_p)\Big)^2$$
 
+### Test statistique
+
+**Test de Fisher**
+
+On se pose la question de l’effet des variables $X$ :
+
+$\mathcal{H}_0 : {\beta_1 = ... = \beta_p = 0}$ contre $\mathcal{H}_1 : \exists$ au moins un $j$ tel que ${\beta_j \neq 0}$ où $j$ varie de $1$ à $p$.
+
+$$F_{obs} = \frac{CM_{reg}} {CM_{res}}$$
+Nous décidons de rejeter l’hypothèse nulle  $\mathcal{H}_0$ et d’accepter l’hypothèse alternative  $\mathcal{H}_1$, au seuil $\alpha = 5\%$, si $$|F_{obs}| \geq F_{1−\alpha,p−1,n−p}$$
+
+**Test de Student**
+
+On se pose la question de l’effet de la variable $x$ :
+
+$\mathcal{H}_0 : {\beta_j = 0}$ contre $\mathcal{H}_1 : {\beta_j \neq 0}$ pour $j = 0, ..., p$
+
+Si l’hypothese nulle $\mathcal{H}_0$ est vérifiée, alors la variable aléatoire $\mathcal{T}_{\widehat\beta_j,n-2} = \frac{\widehat\beta_j-0}{s_{\widehat\beta_j}}$ suit la loi de Student $\mathcal{T}(n-2)$
+
+
+
 ---
  
 # II. Rappels ANOVA à un facteur
+## Le modèle statistique
 
 $$Y \sim X$$
 
 *X* - L’analyse de la variance (ANOVA) se caractérise par des variables explicatives **qualitatives** (Ex : sexe, couleur des yeux).
 
-*Y* - Dans les deux cas la variable expliquée est quantitatives (Ex : taille, poids).
+*Y* - Dans les deux cas (ANOVA et regression linéaire) la variable expliquée est quantitative (Ex : taille, poids).
 
 L’**ANOVA** à un facteur est un à la fois un **modèle** statistique fondé sur la décomposition de la variance et **test** statistique permettant de comparer les moyennes de plusieurs variables aléatoires indépendantes, gaussiennes et de même variance.
 
 L’analyse de la variance est l’une des procédures les plus utilisées dans les applications de la statistique ainsi que dans les méthodes d’analyse de données.
-
-
-
 
 
 
@@ -188,7 +190,7 @@ points(jitter(as.numeric(d$spray)), d$count)
 
 ### L'ANOVA à un facteur, un modèle statistique
 
-$$Y_{ij} = \mu + \beta_i + \epsilon_{ij}$$
+$$Y_{ij} = \mu + \alpha_i + \epsilon_{ij}$$
 
 
 ```{r}
@@ -204,37 +206,12 @@ suppressWarnings(arrows(1:6, mean(y_i), 1:6, y_i, col=adjustcolor(2, alpha.f=0.9
 abline(h=mean(y_i), lty=2)
 
 axis(1, 1:length(levels(d$spray)), labels=levels(d$spray))
-legend("top", c("Y_ij", "beta_i", "residuals", "mu"), pch=c(1,5,5,NA), col=c(1,2,4,1), lty=c(0,0,0,2), border=0)
+legend("top", c("Y_ij", "alpha_i", "residuals", "mu"), pch=c(1,5,5,NA), col=c(1,2,4,1), lty=c(0,0,0,2), border=0)
 ```
 
-où : $$\sum_{i=1}^I \beta_i = 0$$ 
+où : $$\sum_{i=1}^I \alpha_i = 0$$ 
 
-Ainsi : $$\mu_i = \mu + \beta_i, i=1,...,I$$
-
-
-
-
-
-
-### L'ANOVA à un facteur, un test de comparaison des moyennes
-
-Sous certaines hypothèses, l’ANOVA devient un test de comparaison des moyennes des facteurs.
-
-Nous nous proposons de tester l’hypothèse nulle : $$H_0, \mu_1 =\mu_2 =···=\mu_I$$
-
-contre l’hypothèse alternative : $$H_1, \text{les moyennes } \mu_i \text{ ne sont pas toutes égales.}$$
-
-### Hypothèses du test
-
-Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations, aux variables erreurs $\epsilon_{ij}$ qui sont inobservables et satisfont aux 3 conditions suivantes :
-
-1. Elles sont indépendantes
-3. Elles sont de loi gaussienne (normalité)
-2. Elles ont même variance $\sigma^2$ inconnue (homogénéité des variances ou homoscédasticité)
-
-
-
-Ce test se fonde sur la décomposition de la variance.
+Ainsi : $$\mu_i = \mu + \alpha_i, i=1,...,I$$
 
 
 
@@ -293,9 +270,9 @@ est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à
 
 | Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
 | :-------------------- | :-------: | :--: | :--: | ---:
-| Due au facteur        | $sc_{F}$  | $I-1$  | $cm_{F}=\frac{sc_{F}}{I-1}$ | $\frac{cm_{F}}{cm_{res}}$
-| Résiduelle            | $sc_{res}$| $n-I$  | $cm_{res}=\frac{sc_{res}}{n-I}$ 
-| Totale                | $sc_{tot}$| $n-1$ 
+| Due au facteur        | $sc_{F}=\sum(\overline{y}_i-\overline{y}_n)^2$  | $I-1$  | $cm_{F}=\frac{sc_{F}}{I-1}$ | $\frac{cm_{F}}{cm_{res}}$
+| Résiduelle            | $sc_{res}=\sum(y_{ij}-\overline{y}_i)^2$| $n-I$  | $cm_{res}=\frac{sc_{res}}{n-I}$ 
+| Totale                | $sc_{tot}=\sum(y_{ij}-\overline{y}_n)^2$| $n-1$ 
 
 ```{r}
 m = lm(d$count~d$spray)
@@ -306,6 +283,13 @@ anova(m)
 
 # III. Test de l'ANOVA
 ## Test de l'ANOVA
+
+### L'ANOVA à un facteur, un test de comparaison des moyennes
+
+Sous certaines hypothèses, l’ANOVA devient un test de comparaison des moyennes des facteurs.
+
+Ce test se fonde sur la décomposition de la variance.
+
 
 $\mathcal{H}_0 : \mu_1 = \mu_2 = ... = \mu_I$ contre $\mathcal{H}_1$ : les moyennes $\mu_i$ ne sont pas toutes égales 
 
@@ -319,6 +303,8 @@ $\mathbb{P}_{H_0} [F \leq c] = 1 -\alpha$ Alors nous décidons :
 
 ### Hypothèses du test
 
+Les résidus $\widehat{e_{ij}}$ sont associés, sans en être des réalisations, aux variables erreurs $\epsilon_{ij}$ qui sont inobservables et satisfont aux 3 conditions suivantes :
+
 - Indépendance
 - Normalité
 - Homoscedasticité
@@ -329,7 +315,11 @@ $\mathbb{P}_{H_0} [F \leq c] = 1 -\alpha$ Alors nous décidons :
 # IV.Comparaisons multiples
 
 
-Lorsque que nous rejettons $H_0$, nous pouvons chercher à analyser les différences entre les groupes. Nous procédons alors à des tests qui vont répondre à la question suivante : D’où vient la différence ? Quelles moyennes sont différentes ?
+Lorsque que nous rejettons $H_0$, nous pouvons chercher à analyser les **différences entre les groupes**. Nous procédons alors à des tests qui vont répondre à la question suivante : 
+
+D’où vient la différence ? 
+
+Quelles moyennes sont différentes ?
 
 Ces tests qui vont répondre à cette question sont les tests de comparaisons multiples, des adaptations du test de Student.
 
@@ -341,7 +331,8 @@ Les méthodes de comparaison de moyennes à utiliser sont classées en comparais
 ## Méthodes *a priori*
 
 Avant de faire l’expérience, l’expérimentateur connaît la liste des hypothèses qu’il veut tester.
-Exemple : montrer que les deux premiers laboratoires sont différents des deux autres.
+
+*Exemple* : montrer que les deux premiers laboratoires sont différents des deux autres.
 
 Méthodes:
 
@@ -355,7 +346,7 @@ Méthodes:
 
 La plus connues est la correction de *Bonferroni*. Cela consiste à diviser le seuil par le nombre de comparaisons. Bonferroni a montré que cette procédure garantit un taux d’erreur global plus faible que le seuil initial.  
 
-Objectif : Comparer deux à deux toutes les moyennes possibles des I groupes
+**Objectif** : Comparer deux à deux toutes les moyennes possibles des $I$ groupes
 
 1) Calculer le nombre de comparaisons : $n_c = (I \times (I- 1))/2$
 2) Erreur de type I: $\alpha = 5\%$
@@ -369,24 +360,27 @@ Objectif : Comparer deux à deux toutes les moyennes possibles des I groupes
 Illustrons la procédure précédente en comparant le **srpay B et le spray C**.
 
 1) Nombre de comparaisons : $n_c = (6 \times (6- 5))/2 = 15$
-```{r results="verbatim"}
+
+```{r results="verbatim", echo=TRUE}
 n = length(d$count)
 I = length(levels(d$spray))
 n_c = (I * (I-1))/2
+print(n_c)
 ```
 
 2) Erreur de type I: $\alpha = 5\%$
 3) Erreur pour chaque test : $\alpha' = 0.05/15 = 0.003$
 
-```{r results="verbatim"}
+```{r results="verbatim", echo=TRUE}
 alpha = 0.05
 alpha_prime = 0.05/n_c
+print(alpha_prime)
 ```
 
 4) Hypothèses : $\mathcal{H}_0 : \mu_B = \mu_C$ contre $\mathcal{H}_1  : \mu_B \neq \mu_C$
 5) Statistique de test: $t_{obs} = \frac{\overline{y}_i-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i}+\frac{1}{n_j})}$
 
-```{r results="verbatim"}
+```{r results="verbatim", echo=TRUE}
 table(d$spray)
 n_B = table(d$spray)[2]
 print(n_B)
@@ -423,24 +417,27 @@ Nous rejetons $\mathcal{H}_0$ car $|t_{obs}| > t_{n-I;1-(\alpha'/2)}$
 Regardons maintenant le  **spray B et le spray A**.
 
 1) Nombre de comparaisons : $n_c = (6 \times (6- 5))/2 = 15$
-```{r results="verbatim"}
+
+```{r results="verbatim", echo=TRUE}
 n = length(d$count)
 I = length(levels(d$spray))
 n_c = (I * (I-1))/2
+print(n_c)
 ```
 
 2) Erreur de type I: $\alpha = 5\%$
 3) Erreur pour chaque test : $\alpha' = 0.05/15 = 0.003$
 
-```{r results="verbatim"}
+```{r results="verbatim", echo=TRUE}
 alpha = 0.05
 alpha_prime = 0.05/n_c
+print(alpha_prime)
 ```
 
 4) Hypothèses : $\mathcal{H}_0 : \mu_B = \mu_C$ contre $\mathcal{H}_1  : \mu_B \neq \mu_C$
 5) Statistique de test: $t_{obs} = \frac{\overline{y}_i-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i}+\frac{1}{n_j})}$
 
-```{r results="verbatim"}
+```{r results="verbatim", echo=TRUE}
 table(d$spray)
 n_B = table(d$spray)[2]
 print(n_B)
@@ -510,18 +507,9 @@ Méthodes:
 # IV.Comparaisons multiples
 ## Méthode de Tukey HSD
 
-**Objectif** : Classer les traitements par groupes qui sont significativement différents.
-
-**Méthode** :
-
-- Étape 1 : Ordonner les moyennes et calculer toutes les différences deux à deux entre moyennes.
-- Étape 2 : Calculer pour r = 2 à I les différences minimum significatives Wr
-- Étape 3 : Dans le tableau des différences, prendre comme différence minimum significative WI pour toutes les différences. WI est ici alors noté « HSD » (Honestly Significant Difference)
-- Étape 4 : Classer les traitements par groupes significativement différents.
-
 Les moyennes observées $y_i$ sont rangées par ordre croissant. Nous rappelons que nous les notons
-$\overline{y}_1, \overline{y}_2,..., \overline{y}_I$, et les moyennes théoriques associées
-$\mu_1, \mu_2,..., \mu_I$.
+$$\overline{y}_1, \overline{y}_2,..., \overline{y}_I$$ et les moyennes théoriques associées
+$$\mu_1, \mu_2,..., \mu_I$$
 
 Pour chaque $i < i'$, nous considérons l’hypothèse nulle
  $\mathcal{H}_0 : \mu_i =\mu_{i'}$ contre l’hypothèse alternative
@@ -529,7 +517,7 @@ Pour chaque $i < i'$, nous considérons l’hypothèse nulle
 
 Statistique de test: $t_{i',i, obs} = \frac{\overline{y}_{i'}-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i'}+\frac{1}{n_i})}$
 
-Le rapport $t_{i',i, obs}$ défini par ci-dessus est la réalisation d’une variable aléatoire $\mathcal{T}$ qui, si l’hypothèse nulle  $\mathcal{H}_0 $ est vraie, suit une loi appelée étendue studentisée (studentized range) et que nous notons $\mathcal{\widetilde{T}}_{n-I,I}$
+Le rapport $t_{i',i, obs}$ défini par ci-dessus est la réalisation d’une variable aléatoire $\mathcal{T}$ qui, si l’hypothèse nulle  $\mathcal{H}_0$ est vraie, suit une loi appelée étendue studentisée (studentized range) et que nous notons $\mathcal{\widetilde{T}}_{n-I,I}$
 
 Pour un seuil donné $\alpha$, les tables de l'étendue studentisée nous fournissent une valeur critique $c$ telle que
 $\mathbb{P}_{H_0} [T \leq c] = 1 -\alpha$ Alors nous décidons :
@@ -537,66 +525,79 @@ $\mathbb{P}_{H_0} [T \leq c] = 1 -\alpha$ Alors nous décidons :
 - si $t_{i',i, obs} < c$, $\mathcal{H}_0$ est vraie,
 - si $t_{i',i, obs} \geq c$, $\mathcal{H}_1$ est vraie.
 
-*Remarque*: La valeur critique $c$ ne dépend que des indices $n - I$, degrés de liberté de la somme des carrés résiduelle, et de $I$, nombre des moyennes comparées. De plus, les moyennes théoriques, dont les moyennes observées sont comprises entre deux moyennes observées, dont les moyennes théoriques correspondantes sont déclarées égales, sont déclarées égales avec ces dernières.
+*Remarque*: La valeur critique $c$ ne dépend que des indices $n - I$, degrés de liberté de la somme des carrés résiduelle, et de $I$, nombre des moyennes comparées. 
 
 ```{r echo=TRUE, results="verbatim"}
 m = aov(d$count~d$spray)
 TukeyHSD(m)
+```
+
+- `diff` donne les différences entres les moyennes observées.
+- `lwr` donne la borne inférieure de l'intervalle de confiance de la  différence calculée
+- `up` donne la borne supérieure de l'intervalle de confiance de la  différence calculée
+- `padj` donne la pvaleur après ajustement pour les comparaisons multiples
+
+Si la valeur 0 n'est pas dans un intervalle, c'est que la différence correspondante peut être considérée comme significative
+
+```{r echo=TRUE, results="verbatim"}
 plot(TukeyHSD(m))
 ```
+
+
 
 ---
 
 # V. Violation des conditions d'application
 
-Comme nous l’avons vu, l’analyse de la variance à un facteur se base sur les conditions d’application imposant
+Comme nous l’avons vu, l’analyse de la variance à un facteur se base sur les conditions d’application imposant:
+
 1) l’indépendance des variables « erreurs »,
 2) la normalité des variables « erreurs »,
 3) l’homogénéité des variances des variables « erreurs ».
 
-Les sujets doivent être répartis aléatoirement dans les groupes. Enfreindre la condition d’application d’indépendance des variables « erreurs »nuit gravement à la santé de l’analyse de la variance.
+Les sujets doivent être répartis aléatoirement dans les groupes. 
+
+Enfreindre la condition d’application d’indépendance des variables « erreurs » nuit gravement à la santé de l’analyse de la variance.
+
 Lorsque nous nous trouvons dans une situation où un même sujet aura subi plusieurs traitements, ou un même sujet aura été vu plusieurs fois, nous serons alors dans le cas où il faudra utiliser les plans à mesures répétées. Ce sujet sera traité dans un prochain chapitre.
 
 ---
 
 # V. Violation des conditions d'application
+
 ## Normalité des variables erreurs
 
-En ce qui concerne la condition d’application de normalité des variables « erreurs », nous sommes tout aussi stricts : il ne faut pas l’enfreindre.
-Il faut savoir que d’autres techniques statistiques existent lorsque la condition de normalité n’est pas vérifiée.
-Par exemple, nous pouvons envisager des transformations normalisantes. Nous renvoyons le lecteur au paragraphe suivant pour de plus amples renseignements à ce sujet.
 
----
+Il faut savoir que d’autres techniques statistiques existent lorsque la condition de normalité n’est pas vérifiée. Par exemple, nous pouvons envisager des transformations normalisantes.
 
-# V. Violation des conditions d'application
 ##  L’homogénéité des variables « erreurs »
 
-En ce qui concerne la condition d’application d’homogénéité, nous sommes encore aussi stricts : il ne faut absolument pas l’enfreindre.
-Il faut savoir que d’autres techniques statistiques existent lorsque la condition d’homogénéité n’est pas vérifiée. Par exemple, Box (1954) a montré que dans le cas de variances hétérogènes, la distribution F adéquate à laquelle il faut comparer Fobs est une F régulière avec des ddl modifiés. Pour de plus amples détails sur cette procédure, nous renvoyons en première lecture au livre de Howell et en seconde lecture à l’article de Box. Mais l’approche de Box présente un inconvénient majeur : elle est extrêmement conservatrice. Il existe toutefois des alternatives.
+D’autres techniques statistiques existent lorsque la condition d’homogénéité n’est pas vérifiée. Par exemple, Box (1954) a montré que dans le cas de variances hétérogènes, la distribution $\mathcal{F}$ adéquate à laquelle il faut comparer $\mathcal{F}_{obs}$ est une $\mathcal{F}$  régulière avec des ddl modifiés. Mais l’approche de Box présente un inconvénient majeur : elle est extrêmement conservatrice. Il existe toutefois des alternatives.
 
----
-
-# V. Violation des conditions d'application
 ##  Les alternatives
 
 Welch (1951) a proposé une autre approche, que nous ne présenterons pas ici par manque de temps. Le lecteur intéressé par ce sujet pourra en première lecture ouvrir le livre de Howell (sixième édition) à la page 327, puis aller lire l’article original de Welch. Il est à noter que la procédure de Welch se trouve dans la plupart des logiciels statistiques.
 Enfin, à titre d’information, Wilcox (1987), dans son ouvrage
 « New statistical procedures for the social sciences » a un avis tranché sur les conséquences de l’hétérogénéité des variances. Il conseille d’utiliser la procédure de Welch, et en particulier lorsque les échantillons sont de tailles inégales.
 
-
-Lorsque l’une des deux conditions (la condition de normalité des variables erreurs ou la condition d’homogénéité des variables erreurs) n’est pas vérifiée au moyen d’un test statistique, il faut s’assurer que cela n’est pas dû à une valeur extrême ou aberrante. Par exemple, pour savoir si une des valeurs recueillies n’est pas représentative, nous pouvons par exemple utiliser les tests de Grubbs ou de Dixon. Pour ce sujet, le lecteur pourra consulter le cours qui est en ligne.
+Lorsque l’une des deux conditions (la condition de normalité des variables erreurs ou la condition d’homogénéité des variables erreurs) n’est pas vérifiée au moyen d’un test statistique, il faut s’assurer que cela n’est pas dû à une valeur extrême ou aberrante. Par exemple, pour savoir si une des valeurs recueillies n’est pas représentative, nous pouvons par exemple utiliser les tests de Grubbs ou de Dixon.
 
 ---
 
 # VI. Transformation
 
 Il n’est pas conseillé dans un premier temps, d’utiliser les transformations normalisantes, mais plutôt d’avoir une réflexion profonde sur la nature des données à analyser et sur le modèle statistique à utiliser.
+
 En dernier recours, nous pourrons les envisager, comme nous l’avons conseillé dans le paragraphe précédent. Il en existe un certain nombre. Voici les principales :
  
 $y_i′ =log(y_i )$ la transformation logarithmique, 
+
 $y_i′ =y_i^\gamma$ la transformation puissance,
+
 $y_i′ =\Phi^{-1}y_i$ la transformation réciproque,
+
 $y_i′ = arcsin(\sqrt{y_i} )$la transformation arc sinus,
+
 $y_i′ = ...$
 
 Si nous n’avons toujours pas les conditions requises après ces transformations, il faut alors utiliser le test non paramétrique de Kruskal-Wallis. Ce test sera présenté dans un chapitre prochain, avec les tests non paramétriques qui peuvent être utilisés pour des analyses.
@@ -604,13 +605,14 @@ Si nous n’avons toujours pas les conditions requises après ces transformation
 ---
 
 # VII. Grandeur de l'effet expérimental
+## ... ou adequation du modèle
 
-À l’heure actuelle, il existe au moins six mesures de la grandeur de l’effet expérimental. Elles sont toutes différentes et prétendent toutes être moins biaisées que les autres mesures. Ici, dans ce cours nous présenterons uniquement une des mesures les plus courantes : le eta carré
+À l’heure actuelle, il existe au moins six mesures de la grandeur de l’effet expérimental. Elles sont toutes différentes et prétendent toutes être moins biaisées que les autres mesures. Ici, dans ce cours nous présenterons uniquement une des mesures les plus courantes : le **eta carré**
 
-** Mesure de la taille de l'effet $\eta^2$**
+**Mesure de la taille de l'effet $\eta^2$**
 
 Quand le test d’égalité des moyennes est rejeté (l’hypothèse nulle H0 est rejetée), nous pouvons souhaiter donner une mesure de la taille de la différence entre moyennes.
-Nous définissons η2 comme le « pourcentage » de la variabilité des données Yij expliquée par la différence entre les groupes :
+Nous définissons $\eta^2$ comme le « pourcentage » de la variabilité des données $Y_{ij}$ expliquée par la différence entre les groupes :
 
 $\eta^2  =1− \frac{SC_R}{SC_{Tot}} = \frac{SC_{Facteur}}{SC_{Tot}}$
 
@@ -636,15 +638,15 @@ Cette égalité ressemble beaucoup à celle qui définit le eta carré. Nous pou
 # VIII. Facteur à effet aléatoire
 ## Définition
 
-Dans l’analyse de la variance à un facteur à effets fixes avec I modalités, nous observons pour chaque modalité du facteur ni réalisations indépendantes d’une variable aléatoire Y . Nous savons que le modèle utilisé dans cette analyse s’écrit :
+Dans l’analyse de la variance à un facteur à effets fixes avec $I$ modalités, nous observons pour chaque modalité du facteur $n_i$ réalisations indépendantes d’une variable aléatoire $Y$ . Nous savons que le modèle utilisé dans cette analyse s’écrit :
 
-$Y_{ij} = \mu +\alpha_i + \epsilon_{ij}$, $j = 1,...,n_i$, $j = 1,...,I$ 
+$Y_{ij} = \mu +\alpha_i + \epsilon_{ij}$ avec $j = 1,...,n_i$ et $j = 1,...,I$ 
 
-où $\epsilon_{ij}$ son indépendantes et $\mathcal{L}(\epsilon_{ij}) = \mathcal{N}(0,\sigma^2)$. Cette variable représente l'erreur commise lors des observations, $\mu$ désigne l'effet fglobal ou moyenne générale de la variable aléatoire $Y$ et les effets $\alpha_i$ satisfons la contrainte $\Sigma^I_{i=1} \alpha_i = 0$
+où $\epsilon_{ij}$ son indépendantes et $\mathcal{L}(\epsilon_{ij}) = \mathcal{N}(0,\sigma^2)$. Cette variable représente l'erreur commise lors des observations, $\mu$ désigne l'effet global ou moyenne générale de la variable aléatoire $Y$ et les effets $\alpha_i$ satisfons la contrainte $\Sigma^I_{i=1} \alpha_i = 0$
 
-Mais ce modèle ne correspond pas toujours à la réalité. Dans certains cas, en particulier quand les modalités sont choisies au hasard, le fait de supposer que les effets sont fixes n’est pas adapté. Nous sommes amenés à considérer que chaque contribution αi est une réalisation, indépendante des autres réalisations,d’unevariablealéatoire $A_i$ de loi $\mathcal{N}(0,\sigma^2_A)$,elle même indépendante de $\espilon$. Dans ces conditions le modèle s’écrit :
+Mais ce modèle ne correspond pas toujours à la réalité. Dans certains cas, en particulier quand les modalités sont choisies au hasard, le fait de supposer que les effets sont fixes n’est pas adapté. Nous sommes amenés à considérer que chaque contribution $\alpha_i$ est une réalisation, indépendante des autres réalisations,d’une variable aléatoire $A_i$ de loi $\mathcal{N}(0,\sigma^2_A)$,elle même indépendante de $\epsilon$. Dans ces conditions le modèle s’écrit :
 
-$Y_{ij} = \mu +A_i + \epsilon_{ij}$, $j = 1,...,n_i$, $j = 1,...,I$ 
+$Y_{ij} = \mu +A_i + \epsilon_{ij}$, avec $j = 1,...,n_i$ et $j = 1,...,I$ 
 
 
 ---
@@ -661,28 +663,26 @@ Ce test ne compare plus les moyennes mais teste au moyen de la variance du facte
 
 | Source de variation   | sc        | ddl  |  cm  | $F_{obs}$
 | :-------------------- | :-------: | :--: | :--: | ---:
-| Due au facteur        | $sc_{F}$  | $I-1$  | $cm_{A}$ | $\frac{cm_{A}}{cm_{res}}$
-| Résiduelle            | $sc_{res}$| $n-I$  | $cm_{res}$ 
-| Totale                | $sc_{tot}$| $n-1$ 
+| Due au facteur        | $sc_{F}=\sum(\overline{y}_i-\overline{y}_n)^2$  | $I-1$  | $cm_{F}=\frac{sc_{F}}{I-1}$ | $\frac{cm_{F}}{cm_{res}}$
+| Résiduelle            | $sc_{res}=\sum(y_{ij}-\overline{y}_i)^2$| $n-I$  | $cm_{res}=\frac{sc_{res}}{n-I}$ 
+| Totale                | $sc_{tot}=\sum(y_{ij}-\overline{y}_n)^2$| $n-1$ 
 
-  Remarq* :
-Nous *retrouvons strictement les mêmes formules que celles du cas de l’analyse de la variance à un facteur à effets fixes.
+ *Remarque* :
+Nous retrouvons strictement les mêmes formules que celles du cas de l’analyse de la variance à un facteur à effets fixes.
 
+Si les trois conditions sont satisfaites et si l’hypothèse nulle  $\mathcal{H}_0$ est vraie alors
+$Fobs = \frac{cm_A} {cm)_R}$ est une réalisation d’une variable aléatoire $\mathcal{F}$ qui suit une loi de Fisher à $I − 1$ degrés de liberté au numérateur et $n − I$ degrés de liberté au dénominateur. Cette loi est notée $\mathcal{F}_{I−1,n−I}$.
+ 
 ---
 
-# VSi les trois conditions sont satisfaites et si l’hypothèse nulle
-        (H0) est vraie alors
-$Fobs = \frac{cm_A} {cm)_R}$
- est une réalisation d’une variable aléatoire F qui suit une loi de Fisher à $I − 1$ degrés de liberté au numérateur et $n − I$ degrés de liberté au dénominateur. Cette loi est notée $\mathcal{F}_{I−1,n−I}$.
- 
-III. Facteur à effet aléatoire
+# VIII. Facteur à effet aléatoire
 ## Remarques
 
 La démarche pratique est donc la même que dans l’analyse à un facteur à effets fixes.
-2 Cependant, les comparaisons multiples, lorsque l’hypothèse alternative (H1) est acceptée, n’ont plus de sens et ne doivent pas être effectuées.
-3 De même, le calcul de la puissance est différent.
-4 De plus, la normalité des erreurs ne peut plus être testée.
-5 En revanche, la normalité des Yij − μ, quantités qui sont estimées par yij − y , peut être testée.
+
+Cependant, les comparaisons multiples, lorsque l’hypothèse alternative $\mathcal{H}_1$ est acceptée, n’ont plus de sens et ne doivent pas être effectuées.
+
+De plus, la normalité des erreurs ne peut plus être testée. En revanche, la normalité des $Y_{ij} − \mu$, quantités qui sont estimées par $y_{ij} − \overline{y}$ , peut être testée.
         
         
 ---
