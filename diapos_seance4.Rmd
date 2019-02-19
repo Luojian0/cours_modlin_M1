@@ -359,7 +359,7 @@ La plus connues est la correction de *Bonferroni*. Cela consiste à diviser le s
 
 Illustrons la procédure précédente en comparant le **srpay B et le spray C**.
 
-1) Nombre de comparaisons : $n_c = (6 \times (6- 5))/2 = 15$
+1) Nombre de comparaisons : $n_c = (6 \times (6- 1))/2 = 15$
 
 ```{r results="verbatim", echo=TRUE}
 n = length(d$count)
@@ -434,7 +434,7 @@ alpha_prime = 0.05/n_c
 print(alpha_prime)
 ```
 
-4) Hypothèses : $\mathcal{H}_0 : \mu_B = \mu_C$ contre $\mathcal{H}_1  : \mu_B \neq \mu_C$
+4) Hypothèses : $\mathcal{H}_0 : \mu_B = \mu_A$ contre $\mathcal{H}_1  : \mu_B \neq \mu_A$
 5) Statistique de test: $t_{obs} = \frac{\overline{y}_i-\overline{y}_j}{\sqrt{s^2_R}(\frac{1}{n_i}+\frac{1}{n_j})}$
 
 ```{r results="verbatim", echo=TRUE}
@@ -450,7 +450,7 @@ y_i = sapply(levels(d$spray), function(s) {
 y_B = y_i[2]
 print(y_B)
 y_A = y_i[1]
-print(y_C)
+print(y_A)
 
 m = lm(d$count~d$spray)
 anova(m)
