@@ -1,0 +1,56 @@
+title: Linear Model Challenge
+description: The goal of the challenge is to illustrate linear model properties by predicting LRRC1 genes expression missing values according histological and clinical attributes.
+start_date: 2019-01-20 9:45:00+00:00
+end_date: 2029-02-02 00:00:00+00:00
+competition_docker_image: raphbacher/codalabsurvival
+image: logo.png
+has_registration: true
+force_submission_to_leaderboard: true
+disallow_leaderboard_modifying: false
+enable_detailed_results: true
+admin_names: raphbacher,magrichard,FlorentC
+html:
+  data: data.html
+  evaluation: evaluation.html
+  get_starting_kit: get_starting_kit.html
+  overview: overview.html
+  terms: terms.html
+phases:
+  0:
+    auto_migration: false
+    color: blue
+    description: ''
+    is_scoring_only: true
+    label: Exploration
+    max_submissions: 1000000
+    max_submissions_per_day: 1000000
+    phasenumber: 1
+    reference_data: reference_data.zip
+    scoring_program: scoring_program.zip
+    start_date: 2019-01-20 14:58:19+00:00
+leaderboard:
+  columns:
+    MSE:
+      label: MSE
+      leaderboard: &id001
+        label: MSE
+        rank: 1
+      rank: 1
+      sort: desc
+    SDSE:
+      label: SDSE
+      leaderboard: *id001
+      rank: 2
+      sort: desc
+    nbNA:
+      label: nbNA
+      leaderboard: *id001
+      rank: 3
+      sort: desc
+    notNA:
+      label: notNA
+      leaderboard: *id001
+      rank: 4
+      sort: asc
+  leaderboards:
+    MSE: *id001

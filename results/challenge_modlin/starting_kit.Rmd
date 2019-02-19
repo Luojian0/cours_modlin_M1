@@ -1,5 +1,5 @@
 ---
-title: "Linear models challenge"
+title: "Linear Model Challenge"
 subtitle: "Starting kit"
 author: "Florent Chuffart & Magali Richard"
 date: "`r Sys.Date()`"
@@ -79,10 +79,9 @@ Then, we export results for submission.
 # Export results
 e_LRRC1 = e$LRRC1_pred 
 names(e_LRRC1) = rownames(e)
-dir.create("res",showWarnings=FALSE)
-saveRDS(e_LRRC1, "./res/chlg1_modlin_res.rds")
+saveRDS(e_LRRC1, "chlg1_modlin_res.rds")
 zip_filename = paste0("chlg1_modlin_res_", format(Sys.time(), format="%B_%d_%Y_%s"), ".zip")
-zip(zip_filename, paste0("./res/chlg1_modlin_res.rds"))
+zip(zip_filename, "chlg1_modlin_res.rds")
 ```
 
 
