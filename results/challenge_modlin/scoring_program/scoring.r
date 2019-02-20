@@ -19,25 +19,27 @@ if (file.exists(rds_filename)) {
   exp_grp_full = readRDS(rds_filename)
   # if (FALSE)
   {
+
     zip_filename = "reference_data.zip"
     zip(zip_filename, "chlg1_modlin_e_full.rds")
+
     zip_filename = "scoring_program.zip"
     zip(zip_filename, "scoring_program/metadata")
     zip(zip_filename, "scoring_program/scoring.r")    
+
     zip_filename = "starting_kit.zip"
     zip(zip_filename, "starting_kit.Rmd")
     zip(zip_filename, "chlg1_modlin_e.rds")
+    zip(zip_filename, "chlg1_modlin_d.rds")
     zip(zip_filename, "scoring_program/metadata")
     zip(zip_filename, "scoring_program/scoring.r")
     zip(zip_filename, "scoring_program/scoring.r")
     zip(zip_filename, ".Rhistory")
+
     zip_filename = "./codalab_bundle.zip"
     zip(zip_filename, "competition.yaml")
-    zip(zip_filename, "data.html")
-    zip(zip_filename, "evaluation.html")
-    zip(zip_filename, "get_starting_kit.html")
     zip(zip_filename, "overview.html")
-    zip(zip_filename, "terms.html")
+    zip(zip_filename, "get_starting_kit.html")
     zip(zip_filename, "logo.png")
     zip(zip_filename, "reference_data.zip")
     zip(zip_filename, "scoring_program.zip")
