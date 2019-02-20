@@ -5,15 +5,16 @@
 
 #define input/output from command line args (should in principle never be changed)
 args <- commandArgs(TRUE)
-if (length(args)==0) input = output = "./"
+if (length(args)==0) input = output = ref = res = "./"
 if (!exists("input")) input = trimws(args[1]) #get args from command line and remove white spaces
 if (!exists("output")) output = trimws(args[2])
-
+if (!exists("ref")) ref = "/ref/"
+if (!exists("res")) res = "/res/"
 # load results data from participant, here one RData file with inside the variables Aest,Dest,exectime
-e_LRRC1 = readRDS(paste0(input,"/res/chlg1_modlin_res.rds"))
+e_LRRC1 = readRDS(paste0(input, res, "chlg1_modlin_res.rds"))
 
 # read ref data, here two rds files
-rds_filename = paste0(input,"/ref/chlg1_modlin_e_full.rds")
+rds_filename = paste0(input, ref, "/chlg1_modlin_e_full.rds")
 if (file.exists(rds_filename)) {
   exp_grp_full = readRDS(rds_filename)
   # if (FALSE)
@@ -28,6 +29,8 @@ if (file.exists(rds_filename)) {
     zip(zip_filename, "chlg1_modlin_e.rds")
     zip(zip_filename, "scoring_program/metadata")
     zip(zip_filename, "scoring_program/scoring.r")
+    zip(zip_filename, "scoring_program/scoring.r")
+    zip(zip_filename, ".Rhistory")
     zip_filename = "./codalab_bundle.zip"
     zip(zip_filename, "competition.yaml")
     zip(zip_filename, "data.html")

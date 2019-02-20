@@ -134,58 +134,33 @@ hist(e$LRRC1)
 
 The challenge is hosted on the codalab platform:
 
-https://competitions.codalab.org/competitions/21360?secret_key=1b0893b2-c695-4c9b-ae33-334ac7a056ac
+https://competitions.codalab.org/competitions/21774?secret_key=a58ff8ad-c04c-4157-80fd-ac07c3473a68
 
 To participate, you need to:
 
 1- create an account on the codalab platform
 
-2- subscribe to the *Survival challenge*
+2- subscribe to the **Linear Model Challenge**
 
-3- constitute teams (up to 4 people) and design a team coordinator on the platform
 
 ## How to start?
 
-In the [participate](https://competitions.codalab.org/competitions/21360#participate-get_starting_kit) window, go in the *Files* tab and download the public data. 
+First, download the **starting kit** in the *get_starting_kit* section.
 
-Save the 3 files contained into **challenge_ssd2019_public_data** in the same folder than the starting kit. 
+Then, go to the *strating-k* directory.
 
-## What is the aim of the challenge?
+Finally, launch in R the following command:
 
-The challenge is to classify a subset of cancer patients according to discriminating survival groups. You need to submit your classification to the codalab platform. A cox survival p-value will be computed according to your classification, this corresponds to your score on the leaderboard. Try to improve you score!
+```
+rmarkdown::render("starting_kit.Rmd")
+```
 
-You will participate to 2 challenges:
+It procudes the file "starting_kit.html" that explains how to analyse data and produce results.
 
-- Challenge #1: Exploration phase. You need to classify the patients with 'chlg1' `exp_grp$sets` id.
+## How to submit results?
 
-- Challenge #2: Final test phase. You need to classify the patients with 'challenge2' `exp_grp$sets` id.
-
-Use the training set ('training' id in `exp_grp$sets`) to determine your best classification model.
-
-**Warning**  
-
-  - You have only **one** opportunity to submit to Challenge 2, to avoid over fitting.
-  - The Challenge 2 will be opened from 5pm to 8pm. 
+Produced results will be submitted to the "Linear Model Challenge" in the *Participate* tab.
   
-## How do I get information?
-  
-Section 2 indicates where the data are coming from.
-
-Section 3 and 4 explain how to load the data , what are the data, and how to identify the patients.
-
-Section 5 and 6 display exemples of data exploration.
-
-Please go to section 7 to see an exemple of result submission on the cadalab platform.
-
-## What will be the evaluation?
-
-At 8pm, you will have to return a report of 5 pages maximum including an introduction, the methods you used, and a discussion of the results obtained.
-
-You will be evaluated on the quality of your classification (results submission on the codalab paltform), your creativity to achieve this goal and the clarity of your report.
-
-
-
-
 
 
 
