@@ -82,6 +82,7 @@ names(e_LRRC1) = rownames(e)
 saveRDS(e_LRRC1, "chlg1_modlin_res.rds")
 zip_filename = paste0("chlg1_modlin_res_", format(Sys.time(), format="%B_%d_%Y_%s"), ".zip")
 zip(zip_filename, "chlg1_modlin_res.rds")
+# file.remove("chlg1_modlin_res.rds")
 ```
 
 
