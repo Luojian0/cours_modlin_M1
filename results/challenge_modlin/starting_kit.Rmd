@@ -100,7 +100,7 @@ The prediction evaluation is done using the script *scoring_program/scoring.r* (
 e_LRRC1 = e$LRRC1_pred 
 names(e_LRRC1) = rownames(e)
 saveRDS(e_LRRC1, "chlg1_modlin_res.rds")
-zip_filename = paste0("chlg1_modlin_res_", format(Sys.time(), format="%B_%d_%Y_%s"), ".zip")
+zip_filename = paste0("chlg1_modlin_res_", format(Sys.time(), format="%m_%d_%Y_%s"), ".zip")
 zip(zip_filename, "chlg1_modlin_res.rds")
 print(zip_filename)
 ```
@@ -127,10 +127,93 @@ Produced results will be submitted to the “Linear Model Challenge” in the Pa
 
 1. Does linear regression model $LRRC1 \sim age$ provide better results?
 
+```{r}
+layout(matrix(1:2,1), respect=TRUE)
+plot(e$age, e$LRRC1, main="LRRC1~age")
+boxplot(e$age~e$tissue, las=2)
+```
+
+
+Not linear...
+ 
+Desequiliobrium between low expressiuon of LRRC1 and age. Desiquilibrium between tissue and age? 
+
+Confondant factor between thyroid and age...
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(LRRC1~age, e)
+summary(m)
+```
+
 2. Does ANOVA model $LRRC1 \sim sex$ provide better results?
+
+```{r}
+layout(1, respect=TRUE)
+boxplot(e$LRRC1~e$sex, main="LRRC1~sex")
+```
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(LRRC1~sex, e)
+summary(m)
+```
+
+Not evident...
 
 
 3. Does ANOVA $LRRC1 \sim tissue+sex$ provide better results?
+
+```{r}
+layout(1, respect=TRUE)
+boxplot(LRRC1~sex+tissue, e, main="LRRC1~tissue+sex", las=2)
+```
+
+
+correlated effect: not the same influence (up/down) of sex according to tissue.
+
+```{r echo=TRUE, results="verbatim"}
+m = lm(LRRC1~tissue + sex, e)
+summary(m)
+
+
+# Export results
+e_LRRC1 = e$LRRC1_pred 
+names(e_LRRC1) = rownames(e)
+saveRDS(e_LRRC1, "chlg1_modlin_res.rds")
+zip_filename = paste0("chlg1_modlin_res_", format(Sys.time(), format="%m_%d_%Y_%s"), ".zip")
+zip(zip_filename, "chlg1_modlin_res.rds")
+print(zip_filename)
+```
+
+```{r}
+# "lm vs. oav"  "+ vs. *"
+m1 = lm(LRRC1~tissue+sex, e)
+e$LRRC1_pred1 = e$LRRC1
+idx = is.na(e$LRRC1)
+e[idx,]$LRRC1_pred1 = predict(m1, e[idx,])
+
+m2 = lm(LRRC1~tissue*sex, e)
+e$LRRC1_pred2 = e$LRRC1
+idx = is.na(e$LRRC1)
+e[idx,]$LRRC1_pred2 = predict(m2, e[idx,])
+
+e$LRRC1_pred2 == e$LRRC1_pred1
+
+m3 = aov(LRRC1~tissue+sex, e)
+e$LRRC1_pred3 = e$LRRC1
+idx = is.na(e$LRRC1)
+e[idx,]$LRRC1_pred3 = predict(m3, e[idx,])
+
+m4 = aov(LRRC1~tissue*sex, e)
+e$LRRC1_pred4 = e$LRRC1
+idx = is.na(e$LRRC1)
+e[idx,]$LRRC1_pred4 = predict(m4, e[idx,])
+
+e$LRRC1_pred3 == e$LRRC1_pred4
+
+e$LRRC1_pred1 == e$LRRC1_pred3
+e$LRRC1_pred2 == e$LRRC1_pred4
+```
+
 
 4. The challenge provides the gene expression matrix  `d` for the  previously described non tumoral tissues.
 Does exist a gene *g* for which linear regression model $LRRC1 \sim g$ provide better results?
@@ -154,8 +237,13 @@ cors = sapply(rownames(d),function(gs) {
   cor(e[idx,"LRRC1"], e[idx,gs])  
 })
 head(sort(cors, decreasing=TRUE))
+tail(sort(cors, decreasing=TRUE))
+head(sort(abs(cors)))
 m = lm(LRRC1~SPINT2, e)
 summary(m)
+layout(matrix(1:2,1), respect=TRUE)
+plot(e$SPINT2, e$LRRC1, xlab="SPINT2", ylab="LRRC1", )
+plot(e$CD40, e$LRRC1, xlab="CD40", ylab="LRRC1", )
 ```
 
 
