@@ -18,12 +18,14 @@ knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, 
 ```
 
 
-# Overview of the challenge
+# Phase 1
 
-
+## Data
 
 The challenge provides the data.frame `e` of non tumoral tissues described by genes expression values, histological and clinical attributes.
 
+
+**TODO, TP M1 SSD: data descriptive statistics**
 
 ```{r results="verbatim", echo=TRUE}
 e = readRDS(file="chlg1_modlin_e.rds")
@@ -31,27 +33,36 @@ head(e)
 dim(e)
 ```
 
+
+## LRRC1 gene expression
+
 Some LRRC1 expression values are missing.
+
+**The goal of the challenge** is to illustrate linear model properpties by predicting LRRC1 genes expression missing values according histological and clinical attributes.
+
+LRRC1 contributes to HCC development, and may be a potential target for therapeutic intervention in this disease [Li2013].
+
+According to the litterature, expression of LRRC1 is broad in colon, thyroid and some other tissues [NCBI/GENE]. 
+
 
 ```{r}
 table(is.na(e$LRRC1))
 ```
 
-**The goal of the challenge** is to illustrate linear model properpties by predicting LRRC1 genes expression missing values according histological and clinical attributes.
+## Method
 
-According to the litterature, expression of LRRC1 is broad in colon, thyroid and some other tissues.
+We dispose sample from many tissues, the idea is to evaluate if *tissue* could be a good predictor for *LRRC1 expression*.
 
-https://www.ncbi.nlm.nih.gov/gene/55227
-
-```{r results="verbatim", echo=TRUE}
-sort(table(e$tissue))
-layout(matrix(1:2,1), respect=TRUE)
-boxplot(LRRC1~tissue, e, las=2, main="LRRC1~tissue")
-```
 
 After checking model hypothesis (**TODO, TP M1 SSD**), we use ANOVA to predict missing values.
 
+
+```{r}
+layout(1, respect=TRUE)
+boxplot(LRRC1~tissue, e, las=2, main="LRRC1~tissue")
+```
 ```{r results="verbatim", echo=TRUE}
+sort(table(e$tissue))
 # ANOVA
 m = lm(LRRC1~tissue, e)
 ## model hypothesis ################## (**TODO, TP M1 SSD**) ##################
@@ -71,19 +82,9 @@ boxplot(LRRC1_pred~tissue, e[idx,], las=2, main="prediction of LRRC1~tissue")
 ```
 
 
-
+## Results
 
 Then, we export results for submission.
-
-```{r echo=TRUE, results="verbatim"}
-# Export results
-e_LRRC1 = e$LRRC1_pred 
-names(e_LRRC1) = rownames(e)
-saveRDS(e_LRRC1, "chlg1_modlin_res.rds")
-zip_filename = paste0("chlg1_modlin_res_", format(Sys.time(), format="%B_%d_%Y_%s"), ".zip")
-zip(zip_filename, "chlg1_modlin_res.rds")
-# file.remove("chlg1_modlin_res.rds")
-```
 
 
 The metric used to evaluate prediction is the  **mean squared error** (MSE)
@@ -94,29 +95,67 @@ $$MSE = \frac{1}{n}\sum_{i=1}^n{(Y_i-\widehat{Y}_i )^2}$$
 
 The prediction evaluation is done using the script *scoring_program/scoring.r* (provided).
 
-```{r}
-input = output = "./"
+```{r echo=TRUE, results="verbatim"}
+# Export results
+e_LRRC1 = e$LRRC1_pred 
+names(e_LRRC1) = rownames(e)
+saveRDS(e_LRRC1, "chlg1_modlin_res.rds")
+zip_filename = paste0("chlg1_modlin_res_", format(Sys.time(), format="%B_%d_%Y_%s"), ".zip")
+zip(zip_filename, "chlg1_modlin_res.rds")
+print(zip_filename)
 ```
+
 ```{r, code = readLines("scoring_program/scoring.r"), results="verbatim"}
 ```
 
 
 
-  
+## Submission
+
+Produced results will be submitted to the "Linear Model Challenge" in the *Participate* tab.
+
+https://competitions.codalab.org/competitions/21774#participate
+
+How to submit results?
+Produced results will be submitted to the “Linear Model Challenge” in the Participate tab.
 
 
-```{r eval=FALSE}
-table(e$sex)
-boxplot(LRRC1~sex, e, las=2, main="LRRC1~sex")
 
-plot(e$age, e$LRRC1, main="LRRC1~age")
+## To go further
 
-table(is.na(e$LRRC1))
-hist(e$LRRC1)
+**TODO, TP M1 SSD**
 
-# m = lm(LRRC1~tissue, e)
-# s = summary(m)
-# s$r.squared
+1. Does linear regression model $LRRC1 \sim age$ provide better results?
+
+2. Does ANOVA model $LRRC1 \sim sex$ provide better results?
+
+
+3. Does ANOVA $LRRC1 \sim tissue+sex$ provide better results?
+
+4. The challenge provides the gene expression matrix  `d` for the  previously described non tumoral tissues.
+Does exist a gene *g* for which linear regression model $LRRC1 \sim g$ provide better results?
+
+5. What is your best model according to provided data?
+
+
+```{r results="verbatim", echo=TRUE}
+d = readRDS(file="chlg1_modlin_d.rds")
+dim(d)
+e = cbind(e, t(d[,rownames(e)]))
+dim(e)
+# linear regression according an other gene
+m = lm(LRRC1~ACAP2, e)
+summary(m)
+m = lm(LRRC1~LRRC38, e)
+summary(m)
+# selecting genes according to correlation with LRRC1
+idx = !is.na(e$LRRC1)
+cors = sapply(rownames(d),function(gs) {
+  cor(e[idx,"LRRC1"], e[idx,gs])  
+})
+head(sort(cors, decreasing=TRUE))
+m = lm(LRRC1~SPINT2, e)
+summary(m)
 ```
 
 
@@ -129,9 +168,49 @@ hist(e$LRRC1)
 
 
 
-# Evaluation: codalab platform 
 
-## How to participate?
+
+
+
+
+
+
+# References 
+
+
+[NCBI/GENE] https://www.ncbi.nlm.nih.gov/gene/55227
+
+[Li2013] Aberrant upregulation of LRRC1 contributes to human hepatocellular carcinoma.
+Li Y, et al. Mol Biol Rep, 2013 Jul. PMID 23645086
+
+[TCGA] Data are coming from the TCGA (The cancer genome atlas). 
+They were extracted from severla cohorts of patients. 
+Here are TCGA Study Abbreviations corresponding to each cancer. 
+https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations
+
+[Codalab] https://competitions.codalab.org
+
+
+**Supplementals**
+
+`data` corresponds to gene expression data for each patients.
+
+`pf` corresponds to informations related to each gene.
+
+```{r eval=FALSE, echo=FALSE}
+data    = readRDS(file="chlg1_modlin_d.rds")
+head(data)
+dim(data)
+pf      = readRDS(file="chlg1_modlin_p.rds")
+head(pf)
+dim(pf)
+```
+
+
+# Informations
+
+
+**How to participate?**
 
 The challenge is hosted on the codalab platform:
 
@@ -144,7 +223,7 @@ To participate, you need to:
 2- subscribe to the **Linear Model Challenge**
 
 
-## How to start?
+**How to start?**
 
 First, download the **starting kit** in the *get_starting_kit* section.
 
@@ -158,7 +237,7 @@ rmarkdown::render("starting_kit.Rmd")
 
 It procudes the file "starting_kit.html" that explains how to analyse data and produce results.
 
-## How to submit results?
+**How to submit results?**
 
 Produced results will be submitted to the "Linear Model Challenge" in the *Participate* tab.
   
@@ -169,149 +248,11 @@ Produced results will be submitted to the "Linear Model Challenge" in the *Parti
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-# References & Supplementals
-
-
-
-Data are coming from the TCGA (The cancer genome atlas). They were extracted from severla cohorts of patients. Here are TCGA Study Abbreviations corresponding to each cancer:
-
-https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations
-
-
-
-
-
-```{r eval=FALSE, echo=FALSE}
-# `data` corresponds to gene expression data for each pations patients (9466 genes).
-#
-# `pf` corresponds to informations related to each gene.
-
-data    = readRDS(file="chlg1_modlin_d.rds")
-head(data)
-dim(data)
-pf      = readRDS(file="chlg1_modlin_p.rds")
-head(pf)
-dim(pf)
-
-```
-
-
-
-```{r, echo=FALSE, eval=TRUE}
-knitr::opts_chunk$set(collapse=TRUE, comment = "#>", fig.width=9, fig.height=6, eval=TRUE, echo=TRUE, results="hide")
-require(survival)
-scurve = function (ss, v, colors = c("deepskyblue", "black", "red"), main = "Survival", 
-    legend, nb_sign = 3, legend_place = "topright", PLOT_LEGEND = TRUE, 
-    cex.leg = 1, censoring, ...) 
-{
-    idx = !is.na(ss)
-    ss = ss[idx]
-    if (missing(v)) {
-        v = rep(1, sum(idx))
-    }
-    else {
-        v = v[idx]
-    }
-    if (!missing(censoring)) {
-        date = ss[, 1]
-        state = ss[, 2]
-        idx = !is.na(date) & date > censoring
-        date[idx] = censoring
-        state[idx] = 0
-        ss = survival::Surv(date, state)
-    }
-    if (length(unique(v)) == 1) {
-        cox_results = 1
-    }
-    else {
-        cox_results = coxres(ss, as.character(v))
-    }
-    pv = cox_results[1]
-    if (pv < 1e-100) {
-        pvt = "<1e-100"
-    }
-    else {
-        pvt = format(pv, digits = 3, scientific = TRUE)
-    }
-    sf = survival::survfit(ss ~ v)
-    levels = length(na.omit(unique(v)))
-    col = colorRampPalette(colors)(levels)
-    main = paste(main, " p_cox=", signif(as.numeric(pvt), nb_sign), 
-        sep = "")
-    plot(sf, col = col, main = main, ...)
-    tab = table(v)
-    tab = tab[tab != 0]
-    if (PLOT_LEGEND) {
-        if (missing(legend)) {
-            if ("breaks" %in% names(attributes(v))) {
-                b = signif(attr(v, "breaks"), 3)
-                legend = paste("[", b[1:(length(b) - 1)], ",", 
-                  b[2:length(b)], c(rep("[", length(b) - 2), 
-                    "]"), sep = "")
-            }
-            else {
-                legend = names(tab)
-            }
-        }
-        legend = paste(legend, " (", tab, ")", sep = "")
-        legend(legend_place, legend = legend, col = col, pch = 3, 
-            lty = 1, cex = cex.leg)
-    }
-    return(cox_results)
-}
-
-coxres = function (ss, v) 
-{
-    f = suppressWarnings(survival::coxph(ss ~ v))
-    sf = summary(f)
-    pvcox = sf$logtest[3]
-    tf = survival::cox.zph(f)
-    tf = tf$table
-    pvhz = tf[dim(tf)[1], 3]
-    hr = sf$conf.int[1, 1]
-    hrlb = sf$conf.int[1, 3]
-    hrub = sf$conf.int[1, 4]
-    res = c(pvcox, pvhz, hrlb, hr, hrub)
-    names(res) = c("pvcox", "pvhz", "hrlb", "hr", "hrub")
-    return(res)
-}
-```
-
-
 ```{r eval=FALSE}
-## Tumoral and non tumoral samples 
-idx_nt = rownames(exp_grp)[exp_grp$tissue_status == "normal"] 
-idx_tu = rownames(exp_grp)[exp_grp$tissue_status == "tumoral"] 
-```
-
-```{r eval=FALSE}
-idx_training = rownames(exp_grp)[exp_grp$sets == "training"] 
-length(idx_training)
-idx_chlg1 = rownames(exp_grp)[exp_grp$sets == "chlg1"]
-length(idx_chlg1)
-idx_challenge2 = rownames(exp_grp)[exp_grp$sets == "challenge2"] 
-length(idx_challenge2)
-```
+####  PCA Guttman effect
 
 
-
-##  PCA Non tumoral tissues
-
-Guttman effect
-
-```{r eval=FALSE}
-pca = prcomp(t(data[,idx_nt]), scale=FALSE)
+pca = prcomp(t(data), scale=FALSE)
 v = pca$sdev * pca$sdev
 p = v / sum(v) * 100
 
@@ -342,62 +283,17 @@ for (i in c(1,3,5,7)) {
 ```
 
 
-```{r eval=FALSE}
-## Tumoral tissues
-
-pca = prcomp(t(data[,idx_tu]), scale=FALSE)
-v = pca$sdev * pca$sdev
-p = v / sum(v) * 100
-
-
-col = as.numeric(as.factor(exp_grp[rownames(pca$x),]$main_gse_number))
-layout(matrix(1:2,1), respect=TRUE)
-barplot(p[1:10], ylab="% of var")
-
-i = 1
-j = 2
-plot(pca$x[,i], pca$x[,j], 
-  xlab=paste0("PC", i, "(", signif(p[i], 3), "%)"), 
-  ylab=paste0("PC", j, "(", signif(p[j], 3), "%)"),
-  col=col
-)
-legend("topright", pch=16, col=1:length(unique(exp_grp[rownames(pca$x),]$main_gse_number)), levels(as.factor(exp_grp[rownames(pca$x),]$main_gse_number)))
-
-
-# ```
-
-
-# Survival
-
-We plot survival according to: 
-
-   - cancer type
-  - sex
-  - cancer stage 
-  - level of expression of ATAD2 gene
-
-# ```{r label="survival"}
-layout(matrix(1:2, 1), respect=TRUE)
-scurve(exp_grp$os, exp_grp$main_gse_number, main="cancer")
-scurve(exp_grp$os, exp_grp$sex, main="sex")
-scurve(exp_grp$os, exp_grp$tnm_stage, main="stage")
-scurve(exp_grp$os, data["ATAD2",rownames(exp_grp)] > 10.5, main="ATAD2 over expression")
-```
 
 
 
-## Challenge 2
 
-```{r eval=FALSE}
-# Define groups
-idx = rownames(exp_grp)[exp_grp$sets == "challenge2"]
-grps = data["ATAD2",idx] < 10.5
-names(grps) = idx
 
-# Export grps 
-saveRDS(grps, "grps.rds")
-zip("grps_chal2.zip", "grps.rds")
-```
+
+
+
+
+
+
 
 # Session Information
 
