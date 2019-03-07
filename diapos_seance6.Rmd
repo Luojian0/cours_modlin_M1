@@ -332,13 +332,14 @@ Léquation de l'anbalyse de la variance devient pour ce modèle : $$SC_T = SC_R 
 - la somme $SC_{\alpha\beta}$ mesure l’effet de **l’interaction entre les deux facteurs**.
 
 ---
+
 # III. ANOVA 2 facteurs avec répétition
 ## Propriétés
 
 $$\mathcal{L}_{\mathcal{H}_0}\Big(\frac{\frac{SC_\alpha}{I-1}}{\frac{SC_R}{IJ(K-1)}}\Big) = \mathcal{F}_{(I-1),IJ(K-1)}$$
 $$\mathcal{L}_{\mathcal{H}_0}\Big(\frac{\frac{SC_\beta}{J-1}}{\frac{SC_R}{IJ(K-1)}}\Big) = \mathcal{F}_{(J-1),IJ(K-1)}$$
 
-$$\mathcal{L}_{\mathcal{H}_0}\Big(\frac{\frac{SC_\alpha\beta}{(I-1)(J-1)}}{\frac{SC_R}{IJ(K-1)}}\Big) = \mathcal{F}_{(I-1)(J-1),IJ(K-1)}$$
+$$\mathcal{L}_{\mathcal{H}_0}\Big(\frac{\frac{SC_{\alpha\beta}}{(I-1)(J-1)}}{\frac{SC_R}{IJ(K-1)}}\Big) = \mathcal{F}_{(I-1)(J-1),IJ(K-1)}$$
 
 ---
 
@@ -361,7 +362,7 @@ $\mathbb{P}_{H_0} [F \leq c] = 1 -\alpha$ Alors nous décidons :
 | :---------------------- | :------------------: | :-----------: | :----------------------------------------------------: | :--------------------------------: | ---------------: 
 | Due à $F_\alpha$        | $sc_\alpha$          | $I-1$         | $cm_{\alpha}=\frac{sc_{\alpha}}{I-1}$                  | $\frac{cm_{\alpha}}{cm_{R}}$       | $c_\alpha$
 | Due à $F_\beta$         | $sc_\beta$           | $J-1$         | $cm_{\beta}=\frac{sc_{\beta}}{J-1}$                    | $\frac{cm_{\beta}}{cm_{R}}$        | $c_\beta$
-| Due à $F_{\alpha\beta}$ | $sc_\alpha\beta$     | $(I-1)(J-1)$  | $cm_{\alpha\beta}=\frac{sc_{\alpha\beta}}{(I-1)(J-1)}$ | $\frac{cm_{\alpha\beta}}{cm_{R}}$  | $c_\alpha\beta$
+| Due à $F_{\alpha\beta}$ | $sc_{\alpha\beta}$     | $(I-1)(J-1)$  | $cm_{\alpha\beta}=\frac{sc_{\alpha\beta}}{(I-1)(J-1)}$ | $\frac{cm_{\alpha\beta}}{cm_{R}}$  | $c_{\alpha\beta}$
 | Résiduelle              | $sc_{R}$             | $IJ(K-1)$     | $cm_{R}=\frac{sc_{R}}{IJ(K-1)}$ 
 | Totale                  | $sc_{T}$             | $n-1$ 
 
@@ -369,6 +370,18 @@ $\mathbb{P}_{H_0} [F \leq c] = 1 -\alpha$ Alors nous décidons :
 
 # III. ANOVA 2 facteurs avec répétition
 ## Exemple
+
+1) Dans un premier temps, on regarle la pertinence du modèle "global".
+
+$$ \mathcal{L}_{\mathcal{H}_0}\Big(\frac{\frac{SC_{mod}}{(IJ-1)}}{\frac{SC_{res}}{(IJ(k-1))}}\Big)= \mathcal{F}_{(IJ-1),IJ(K-1)}$$
+```{r results="verbatim", echo=TRUE}
+mod =lm(breaks~wool*tension)
+summary(mod)
+```
+
+Le modèle est pertinent et explique 37% de la variabilité (31% si on corrige par le nombre de paramètres).
+
+2) Dans un deuxième temps, on teste les effets des facteurs.
 
 ```{r results="verbatim", echo=TRUE}
 m = aov(breaks~wool*tension)
